@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<link rel="stylesheet" href="styles.css">
+    <head>
+        <meta charset="UTF-8">
+        <title>Parking</title>
+        <style>
+            body {font-family: Arial, sans-serif; text-align: center; margin-top: 50px;}
+            input,textarea,button {padding: 10px;margin: 10px;width: 300px;}
+        </style>
+    </head>
+    <body onload="document.querySelector('.tablinks').click()">
+        <h1 class="principaltitle">Parking </h1>
+        <div class="tab">
+            <button class="tablinks" onclick="openOption(event,'Login')">Login</button>
+            <button class="tablinks" onclick="openOption(event,'Registrarse')">Registrarse</button>
+        </div>
+
+        <div id="Login" class="tabcontent">
+            <form action="/login" method="POST">
+                <input type="email" name="email" placeholder="Ingresa tu correo" required><br>
+                <input type="password" name="password" placeholder="Contraseña" required><br>
+                <button type="submit">Ingresar</button>
+            </form>
+        </div>
+
+        <div id="Registrarse" class="tabcontent">
+            <form action="/registrar" method="POST">
+                <input type="text" name="nombres" placeholder="Tus nombres" required><br>
+                <input type="text" name="apellidos" placeholder="Tus apellidos" required><br>
+                <input type="email" name="email" placeholder="Tu correo" required><br>
+                <input type="password" name="password" placeholder="Contraseña" required><br>
+                <button type="submit">Registrarse</button>
+            </form>
+        </div>
+
+    <script>
+    function openOption(evt, nameEvent) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(nameEvent).style.display = "block";
+    evt.currentTarget.className += " active";
+    }
+    </script>
+
+    </body>
+</html>
