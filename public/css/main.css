@@ -8,23 +8,21 @@
 
 /* Variables CSS para la paleta de colores */
 :root {
-    --color-principal: #008080;      /* Verde azulado - Base tecnológica */
-    --color-fondo-claro: #F5F5F5;    /* Gris perla - Neutro, mejora legibilidad */
-    --color-acento: #C8E000;         /* Verde lima - Vitalidad y frescura */
-    --color-botones: #FF6F61;        /* Coral suave - Contraste cálido para acciones */
-    --color-texto-principal: #333333; /* Gris grafito - Texto principal */
-    
-    /* Colores adicionales derivados */
-    --color-principal-hover: #006666;
-    --color-principal-light: #4DA6A6;
-    --color-botones-hover: #FF5A4A;
-    --color-botones-light: #FF8A7F;
-    --color-acento-hover: #B8D000;
-    --color-sombra: rgba(0, 0, 0, 0.1);
-    --color-borde: #E0E0E0;
-    --color-exito: #28a745;
-    --color-error: #dc3545;
-    --color-advertencia: #ffc107;
+    --color-principal: #3d5a80;     /* Azul deslumbrante, principal y encabezados */
+    --color-fondo-claro: #e0fbfc;   /* Azul muy claro: fondo base */
+    --color-acento: #98c1d9;        /* Azul claro: botones y tarjetas principales */
+    --color-botones: #3d5a80;       /* Azul deslumbrante: botones principales */
+    --color-botones-sec: #6699CC;   /* Gris azul: botones secundarios */
+    --color-botones-hover: #293241; /* Gris oscuro: hover de botones principales */
+    --color-botones-sec-hover: #98c1d9; /* Hover secundario */
+    --color-texto-principal: #293241;   /* Gris oscuro: texto e íconos */
+    --color-texto-claro: #e0fbfc;       /* Azul muy claro: Para texto sobre oscuro */
+    --color-sombra: rgba(61,90,128,0.08);
+    --color-borde: #98c1d9;            /* Azul claro para bordes suaves */
+    --color-card: #ffffff;             /* Fondo de tarjetas, si se requiere aún más claro */
+    --color-exito: #56b881;            /* Verde para estados de éxito, apropiado con el azul */
+    --color-error: #e76f51;            /* Naranja/rojo terroso para errores */
+    --color-advertencia: #ffc107;      /* Amarillo para alertas */
 }
 
 /* Reset básico y configuración global */
