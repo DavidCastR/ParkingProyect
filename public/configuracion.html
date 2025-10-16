@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - Parking</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <h1>Configuración del Sistema</h1>
+            
+            <div class="welcome">
+                <h2>Panel de Configuración</h2>
+                <p>Gestiona la configuración del sistema de parqueadero.</p>
+            </div>
+            
+            <div class="card">
+                <h3>Configuración General</h3>
+                <form>
+                    <label for="nombre-parqueadero">Nombre del Parqueadero:</label>
+                    <input type="text" id="nombre-parqueadero" name="nombre-parqueadero" placeholder="Ingresa el nombre del parqueadero">
+                    
+                    <label for="capacidad-total">Capacidad Total:</label>
+                    <input type="number" id="capacidad-total" name="capacidad-total" placeholder="Número total de espacios">
+                    
+                    <label for="tarifa-hora">Tarifa por Hora:</label>
+                    <input type="number" id="tarifa-hora" name="tarifa-hora" placeholder="Tarifa en pesos colombianos" step="0.01">
+                    
+                    <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h3>Configuración de Horarios</h3>
+                <form>
+                    <label for="hora-apertura">Hora de Apertura:</label>
+                    <input type="time" id="hora-apertura" name="hora-apertura">
+                    
+                    <label for="hora-cierre">Hora de Cierre:</label>
+                    <input type="time" id="hora-cierre" name="hora-cierre">
+                    
+                    <label for="dias-operacion">Días de Operación:</label>
+                    <select id="dias-operacion" name="dias-operacion" multiple>
+                        <option value="lunes">Lunes</option>
+                        <option value="martes">Martes</option>
+                        <option value="miercoles">Miércoles</option>
+                        <option value="jueves">Jueves</option>
+                        <option value="viernes">Viernes</option>
+                        <option value="sabado">Sábado</option>
+                        <option value="domingo">Domingo</option>
+                    </select>
+                    
+                    <button type="submit" class="btn btn-primary">Actualizar Horarios</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h3>Configuración de Usuarios</h3>
+                <div class="alert alert-info">
+                    <strong>Información:</strong> Aquí puedes gestionar los permisos y roles de los usuarios del sistema.
+                </div>
+                
+                <div class="nav-buttons">
+                    <a href="#" class="btn btn-accent">Gestionar Empleados</a>
+                    <a href="#" class="btn btn-accent">Configurar Permisos</a>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <a href="/dashboard-empleado.html" class="btn btn-secondary">Volver al Dashboard</a>
+                <a href="/" class="btn btn-danger">Cerrar Sesión</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirigiendo... - Parking</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        .redirect-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .redirect-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px var(--color-sombra);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--color-fondo-claro);
+            border-top: 4px solid var(--color-principal);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .redirect-message {
+            margin: 20px 0;
+            color: var(--color-texto-principal);
+        }
+        
+        .redirect-message h2 {
+            color: var(--color-principal);
+            margin-bottom: 15px;
+        }
+        
+        .redirect-message p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .countdown {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--color-botones);
+            margin-top: 15px;
+        }
+        
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--color-exito);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .success-icon::before {
+            content: "✓";
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-container">
+        <div class="redirect-card">
+            <div class="success-icon"></div>
+            <div class="redirect-message">
+                <h2 id="welcomeMessage">¡Bienvenido!</h2>
+                <p id="redirectText">Vas a ser redirigido al dashboard de cliente.</p>
+                <div class="loading-spinner"></div>
+                <p class="countdown" id="countdown">Redirigiendo en <span id="timer">1.0</span> segundos...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener parámetros de la URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // Obtener datos del usuario desde la URL
+        const userName = getUrlParameter('name') || 'Usuario';
+        const userType = getUrlParameter('type') || 'cliente';
+        const redirectUrl = getUrlParameter('redirect') || '/dashboard-cliente.html';
+        
+        // Actualizar el mensaje de bienvenida
+        document.getElementById('welcomeMessage').textContent = `¡Bienvenido ${userName}!`;
+        
+        // Mensaje específico según el tipo de usuario
+        const dashboardText = userType === 'empleado' ? 'dashboard administrativo' : 'dashboard de cliente';
+        document.getElementById('redirectText').textContent = `Vas a ser redirigido al ${dashboardText}.`;
+        
+        // Contador regresivo más preciso
+        let timeLeft = 1.0;
+        const timerElement = document.getElementById('timer');
+        const countdownElement = document.getElementById('countdown');
+        
+        const countdownInterval = setInterval(() => {
+            timeLeft -= 0.05; // Actualizar cada 50ms para mayor precisión
+            timerElement.textContent = timeLeft.toFixed(2);
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                timerElement.textContent = '0.00';
+                countdownElement.textContent = 'Redirigiendo ahora...';
+                
+                // Ocultar spinner y mostrar mensaje final
+                document.querySelector('.loading-spinner').style.display = 'none';
+                
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 200);
+            }
+        }, 50);
+        
+        // Redirección de respaldo después de 1.2 segundos (por si falla el contador)
+        setTimeout(() => {
+            if (timeLeft > 0) {
+                clearInterval(countdownInterval);
+                window.location.href = redirectUrl;
+            }
+        }, 1200);
+        
+        // Manejar errores de redirección
+        window.addEventListener('error', function(e) {
+            console.error('Error en la página de redirección:', e);
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 100);
+        });
+    </script>
+</body>
+</html>

@@ -26,43 +26,92 @@ app.get('/', (req,res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.post('/registrar', (req,res) => {
-    const {nombres, apellidos, email, password} = req.body;
-    const sql = 'INSERT INTO users (nombres, apellidos,email,password) VALUES (?,?,?,?)';
-    db.query(sql,[nombres, apellidos, email, password], (err, result) =>
-    {
-    if(err){
-        console.error('Error al insertar:', err);
-        res.send('Hubo un error al guardar tus datos');
-    } else {
-        console.log('Datos insertados correctamente.');
-        res.send(`<h2> Gracias, $(nombre). has sido registrado en la plataforma.</h2>`);
-    }
-    });
-    });
+app.post('/registrarcliente', (req,res) => {
+    const {nombres, apellidos, email, telefono, password} = req.body;
     
-    app.post('/login', (req, res) => {
-      const { email, password } = req.body;
-      const sql = 'SELECT id, email FROM users WHERE email = ? AND password = ? AND id_empleado != NULL';
-      db.query(sql, [email, password], (err, result) => {
-        if (err) {
-          console.error('Error al consultar los datos:', err);
-          return res.status(500).send('Hubo un error al consultar tus datos');
-        }
-        if (result.length > 0) {
-          res.send(`<h2>Bienvenido, vas a ser redireccionado a la página de gestión.</h2>
-            <script>
-              setTimeout(function() {
-                window.location.href = "/consola_adm.html";
-              }, 1000);
-            </script>
-            `);
+    // Primero insertar en la tabla PERSONA
+    const sqlPersona = 'INSERT INTO PERSONA (tipo_documento, numero_documento, nombres, apellidos, telefono, email) VALUES (?, ?, ?, ?, ?, ?)';
+    
+    // Por defecto asignamos tipo_documento como CC y generamos un número de documento temporal
+    const tipoDocumento = 'CC';
+    const numeroDocumento = 'TEMP' + Date.now(); // Número temporal único
+    
+    db.query(sqlPersona, [tipoDocumento, numeroDocumento, nombres, apellidos, telefono || null, email], (err, result) => {
+        if(err){
+            console.error('Error al insertar persona:', err);
+            res.send('<h2>Hubo un error al guardar tus datos de persona</h2>');
         } else {
-          res.status(401).send('<h2>Credenciales incorrectas</h2>');
+            const idPersona = result.insertId;
+            console.log('Persona insertada correctamente con ID:', idPersona);
+            
+            // Ahora insertar en la tabla CLIENTE con la contraseña
+            const sqlCliente = 'INSERT INTO CLIENTE (id_persona, password) VALUES (?, ?)';
+            
+            db.query(sqlCliente, [idPersona, password], (err, resultCliente) => {
+                if(err){
+                    console.error('Error al insertar cliente:', err);
+                    res.send('<h2>Hubo un error al crear el perfil de cliente</h2>');
+                } else {
+                    console.log('Cliente registrado correctamente con ID:', resultCliente.insertId);
+                    res.send(`<h2>¡Gracias ${nombres}! Has sido registrado como cliente en la plataforma.</h2>
+                        <p>Tu ID de cliente es: ${resultCliente.insertId}</p>
+                        <p><a href="/">Volver al inicio</a></p>`);
+                }
+            });
         }
-      });
     });
+});
+    
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    // Primero verificar si es un empleado
+    const sqlEmpleado = `
+        SELECT e.id_empleado, p.nombres, p.apellidos, p.email
+        FROM EMPLEADO e
+        JOIN PERSONA p ON e.id_persona = p.id_persona
+        WHERE p.email = ? AND e.password_hash = ?
+    `;
+    
+    db.query(sqlEmpleado, [email, password], (err, resultEmpleado) => {
+        if (err) {
+            console.error('Error al consultar empleado:', err);
+            return res.status(500).send('Hubo un error al consultar los datos');
+        }
+        
+        if (resultEmpleado.length > 0) {
+            // Es un empleado - redirigir a página con estilo
+            const redirectUrl = `/redirect.html?name=${encodeURIComponent(resultEmpleado[0].nombres)}&type=empleado&redirect=${encodeURIComponent('/dashboard-empleado.html')}`;
+            res.redirect(redirectUrl);
+            return;
+        }
+        
+        // Si no es empleado, verificar si es cliente
+        const sqlCliente = `
+            SELECT c.id_cliente, p.nombres, p.apellidos, p.email
+            FROM CLIENTE c
+            JOIN PERSONA p ON c.id_persona = p.id_persona
+            WHERE p.email = ? AND c.password = ?
+        `;
+        
+        db.query(sqlCliente, [email, password], (err, resultCliente) => {
+            if (err) {
+                console.error('Error al consultar cliente:', err);
+                return res.status(500).send('Hubo un error al consultar los datos');
+            }
+            
+            if (resultCliente.length > 0) {
+                // Es un cliente - redirigir a página con estilo
+                const redirectUrl = `/redirect.html?name=${encodeURIComponent(resultCliente[0].nombres)}&type=cliente&redirect=${encodeURIComponent('/dashboard-cliente.html')}`;
+                res.redirect(redirectUrl);
+            } else {
+                // No se encontró ni como empleado ni como cliente
+                res.status(401).send('<h2>Credenciales incorrectas</h2>');
+            }
+        });
+    });
+});
 
 app.listen(PORT, () =>{
-    console.log('Servidor escuchando en http://localhost:$(PORT)');
+    console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
