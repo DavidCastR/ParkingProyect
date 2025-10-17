@@ -181,17 +181,49 @@ definirMontoYFacturar = (req, res, ticket, vehiculo, tarifa) => {
 
     // Actualiza ticket
     db.query('UPDATE TICKET SET hora_salida = ?, monto_total = ?, estado_ticket = "Cerrado" WHERE id_ticket = ?', [horaSalida, montoTotal, idTicket], (err) => {
-        if (err) return res.json({ success: false, mensaje: 'Error cerrando ticket.' });
-        // Simula método de pago 1
-        db.query(
-            'INSERT INTO FACTURA (fecha_emision, valor_total, estado_factura, id_ticket, id_metodo_pago) VALUES (CURDATE(), ?, "Pendiente", ?, 1)',
-            [montoTotal, idTicket], (err, result) => {
-                if (err) return res.json({ success: false, mensaje: 'Error generando factura.' });
-                return res.json({
-                    success: true,
-                    mensaje: `Salida registrada y factura generada. (${minutos} minutos x $${valorUnitario}/minuto)` ,
-                    valor_pagar: `$${montoTotal.toLocaleString()}`
+        if (err) {
+            console.error('Error cerrando ticket:', err);
+            return res.json({ success: false, mensaje: 'Error cerrando ticket.' });
+        }
+        
+        // Primero verificar si existe método de pago, si no, crearlo
+        db.query('SELECT id_metodo_pago FROM METODO_PAGO WHERE id_metodo_pago = 1', (err, metodoPago) => {
+            if (err) {
+                console.error('Error verificando método de pago:', err);
+                return res.json({ success: false, mensaje: 'Error verificando método de pago.' });
+            }
+            
+            let idMetodoPago = 1;
+            
+            // Si no existe el método de pago, crearlo
+            if (metodoPago.length === 0) {
+                db.query('INSERT INTO METODO_PAGO (tipo_metodo, referencia_pago) VALUES ("Efectivo", "Pago en efectivo")', (err, result) => {
+                    if (err) {
+                        console.error('Error creando método de pago:', err);
+                        return res.json({ success: false, mensaje: 'Error creando método de pago.' });
+                    }
+                    idMetodoPago = result.insertId;
+                    crearFactura();
                 });
+            } else {
+                crearFactura();
+            }
+            
+            function crearFactura() {
+                db.query(
+                    'INSERT INTO FACTURA (fecha_emision, valor_total, estado_factura, id_ticket, id_metodo_pago) VALUES (CURDATE(), ?, "Pendiente", ?, ?)',
+                    [montoTotal, idTicket, idMetodoPago], (err, result) => {
+                        if (err) {
+                            console.error('Error generando factura:', err);
+                            return res.json({ success: false, mensaje: 'Error generando factura: ' + err.message });
+                        }
+                        return res.json({
+                            success: true,
+                            mensaje: `Salida registrada y factura generada. (${minutos} minutos x $${valorUnitario}/minuto)` ,
+                            valor_pagar: `$${montoTotal.toLocaleString()}`
+                        });
+                });
+            }
         });
     });
 }
