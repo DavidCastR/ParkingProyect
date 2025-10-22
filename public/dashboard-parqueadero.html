@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro Parqueadero - Proveedor</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    /* Reutilizamos los estilos del código original */
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .layout-admin {
+      display: flex;
+      min-height: 100vh;
+      background: var(--color-fondo-claro);
+    }
+
+    .sidebar-admin {
+      width: 220px;
+      background: var(--color-principal);
+      color: var(--color-texto-claro);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 40px;
+      min-height: 100vh;
+    }
+
+    .sidebar-admin h2 {
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .sidebar-admin ul {
+      list-style: none;
+      width: 100%;
+      padding-left: 0;
+    }
+
+    .sidebar-admin ul li {
+      width: 100%;
+    }
+
+    .sidebar-admin ul li a {
+      display: block;
+      color: var(--color-texto-claro);
+      padding: 15px 30px;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .sidebar-admin ul li a:hover,
+    .sidebar-admin ul li.active a {
+      background: var(--color-botones-sec);
+      color: lightsalmon;
+    }
+
+    .panel-zona {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 50px 0 30px 0;
+    }
+
+    .admin-card-box {
+      background: var(--color-card);
+      box-shadow: 0 2px 16px var(--color-sombra);
+      border-radius: 14px;
+      padding: 32px 38px 28px 38px;
+      min-width: 340px;
+      max-width: 500px;
+    }
+
+    .admin-card-box h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--color-principal);
+      margin-bottom: 20px;
+    }
+
+    .field-label {
+      display: block;
+      color: var(--color-texto-principal);
+      font-weight: bold;
+      margin-bottom: 8px;
+      margin-top: 14px;
+    }
+
+    .input-admin {
+      width: 100%;
+      padding: 14px 15px;
+      border-radius: 8px;
+      border: 2px solid var(--color-borde);
+      font-size: 16px;
+      background: var(--color-fondo-claro);
+      margin-bottom: 16px;
+      transition: border-color 0.3s;
+    }
+
+    .input-admin:focus {
+      outline: none;
+      border-color: var(--color-botones-sec);
+    }
+
+    .admin-btn {
+      display: block;
+      width: 100%;
+      background: var(--color-principal);
+      color: var(--color-texto-claro);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      padding: 13px 0;
+      margin-top: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .admin-btn:hover {
+      background: var(--color-botones-sec);
+      color: white;
+    }
+
+    .info-registro {
+      margin-top: 16px;
+      min-height: 40px;
+    }
+    .msg {
+  font-size: 1rem;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.msg-error {
+  background-color: #ffe9e7;
+  color: #c0392b;
+  border: 2px solid #e76f51;
+  box-shadow: 0 2px 8px rgba(231, 111, 81, 0.2);
+}
+.msg-success {
+  background-color: #e0f7e9;
+  color: #2e7d32;
+  border: 2px solid #56b881;
+  box-shadow: 0 2px 8px rgba(86, 184, 129, 0.2);
+}
+
+/* Mensaje de información */
+.msg-info {
+  background-color: #eef6fb;
+  color: #31708f;
+  border: 2px solid #bce8f1;
+}
+  </style>
+</head>
+<body>
+<div class="layout-admin">
+  <nav class="sidebar-admin">
+    <h2>Menú Proveedor</h2>
+    <ul>
+      <li class="active"><a href="#">Registrar Parqueadero</a></li>
+      <li><a href="#">Mis Parqueaderos</a></li>
+      <li><a href="#">Soporte</a></li>
+      <li><a href="/">Cerrar Sesión</a></li>
+    </ul>
+  </nav>
+  <section class="panel-zona">
+    <div class="admin-card-box">
+      <h3>Registro de Parqueadero</h3>
+      <form id="formParqueadero">
+        <label class="field-label" for="idParqueadero">ID del Parqueadero</label>
+        <input class="input-admin" type="text" id="idParqueadero" name="id" required>
+
+        <label class="field-label" for="nombreParqueadero">Nombre del Parqueadero</label>
+        <input class="input-admin" type="text" id="nombreParqueadero" name="nombre" required>
+
+        <label class="field-label" for="horario">Horario</label>
+        <input class="input-admin" type="text" id="horario" name="horario" placeholder="Ej: 8:00 AM - 10:00 PM" required>
+
+        <label class="field-label" for="capacidad">Capacidad</label>
+        <input class="input-admin" type="number" id="capacidad" name="capacidad" required>
+
+        <label class="field-label" for="ubicacion">Dirección</label>
+        <input class="input-admin" type="text" id="ubicacion" name="direccion" required>
+
+        <label class="field-label" for="tipo">Tipo de Parqueadero</label>
+        <select class="input-admin" id="tipo" name="tipo" required>
+          <option value="Publico">Público</option>
+          <option value="Privado">Privado</option>
+          <option value="Mixto">Mixto</option>
+        </select>
+
+        <button class="admin-btn" type="submit">Registrar Parqueadero</button>
+        <div class="info-registro" id="msgRegistro"></div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<script>
+document.getElementById('formParqueadero').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const msg = document.getElementById('msgRegistro');
+  msg.textContent = 'Procesando registro...';
+  msg.style.color = '';
+
+  const datos = {
+    id: document.getElementById('idParqueadero').value.trim(),
+    nombre: document.getElementById('nombreParqueadero').value.trim(),
+    horario: document.getElementById('horario').value.trim(),
+    capacidad: parseInt(document.getElementById('capacidad').value.trim(), 10),
+    direccion: document.getElementById('ubicacion').value.trim(),
+    tipo: document.getElementById('tipo').value
+  };
+
+  fetch('/registrar-parqueadero', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos)
+  })
+  .then(res => res.json())
+  .then(respuesta => {
+    if (respuesta.success) {
+      msg.textContent = 'Parqueadero registrado correctamente.';
+      msg.style.color = '#56b881';
+      document.getElementById('formParqueadero').reset();
+    } else {
+      msg.textContent = respuesta.mensaje || 'Error en el registro.';
+      msg.style.color = '#e76f51';
+    }
+  })
+  .catch(() => {
+    msg.textContent = 'Error de red o servidor.';
+    msg.style.color = '#e76f51';
+  });
+});
+</script>
+</body>
+</html>
