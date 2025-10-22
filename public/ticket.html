@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket de Ingreso - Parking</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="p-2">
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
+    
+    <div class="ticket-container">
+        <div class="ticket-header">
+            <h1>🎫 TICKET DE INGRESO</h1>
+            <p class="subtitle-muted">Sistema de Parqueadero</p>
+        </div>
+        
+        <div class="ticket-body">
+            <div class="ticket-info">
+                <span class="ticket-label">Número de Ticket:</span>
+                <span class="ticket-value" id="numeroTicket">-</span>
+            </div>
+            
+            <div class="ticket-info">
+                <span class="ticket-label">Placa:</span>
+                <span class="ticket-value" id="placa">-</span>
+            </div>
+            
+            <div class="ticket-info">
+                <span class="ticket-label">Tipo de Vehículo:</span>
+                <span class="ticket-value" id="tipoVehiculo">-</span>
+            </div>
+            
+            <div class="ticket-info">
+                <span class="ticket-label">Hora de Ingreso:</span>
+                <span class="ticket-value" id="horaIngreso">-</span>
+            </div>
+            
+            <div class="ticket-info">
+                <span class="ticket-label">Fecha:</span>
+                <span class="ticket-value" id="fecha">-</span>
+            </div>
+        </div>
+        
+        <div class="ticket-footer">
+            <p><strong>Conserve este ticket para su salida</strong></p>
+            <p>Gracias por usar nuestros servicios</p>
+        </div>
+    </div>
+
+    <script>
+        // Obtener parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Llenar los datos del ticket
+        document.getElementById('numeroTicket').textContent = urlParams.get('ticket') || '-';
+        document.getElementById('placa').textContent = urlParams.get('placa') || '-';
+        document.getElementById('tipoVehiculo').textContent = urlParams.get('tipo') || '-';
+        document.getElementById('horaIngreso').textContent = urlParams.get('hora') || '-';
+        document.getElementById('fecha').textContent = urlParams.get('fecha') || '-';
+    </script>
+</body>
+</html>

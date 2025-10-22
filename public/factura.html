@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura de Salida - Parking</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="p-2">
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
+    
+    <div class="factura-container">
+        <div class="factura-header">
+            <h1>🧾 FACTURA DE SALIDA</h1>
+            <p class="subtitle-muted">Sistema de Parqueadero</p>
+        </div>
+        
+        <div class="factura-body">
+            <div class="factura-info">
+                <span class="factura-label">Número de Factura:</span>
+                <span class="factura-value" id="numeroFactura">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Número de Ticket:</span>
+                <span class="factura-value" id="numeroTicket">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Placa:</span>
+                <span class="factura-value" id="placa">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Tipo de Vehículo:</span>
+                <span class="factura-value" id="tipoVehiculo">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Hora de Ingreso:</span>
+                <span class="factura-value" id="horaIngreso">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Hora de Salida:</span>
+                <span class="factura-value" id="horaSalida">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Tiempo Estacionado:</span>
+                <span class="factura-value" id="tiempoEstacionado">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Tarifa por Minuto:</span>
+                <span class="factura-value" id="tarifaMinuto">-</span>
+            </div>
+            
+            <div class="total-section">
+                <div class="factura-label">TOTAL A PAGAR:</div>
+                <div class="total-amount" id="totalPagar">-</div>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Fecha de Emisión:</span>
+                <span class="factura-value" id="fechaEmision">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Estado:</span>
+                <span class="factura-value" id="estado">Pendiente</span>
+            </div>
+        </div>
+        
+        <div class="factura-footer">
+            <p><strong>Gracias por usar nuestros servicios</strong></p>
+            <p>Conserve esta factura como comprobante de pago</p>
+        </div>
+    </div>
+
+    <script>
+        // Obtener parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Llenar los datos de la factura
+        document.getElementById('numeroFactura').textContent = urlParams.get('factura') || '-';
+        document.getElementById('numeroTicket').textContent = urlParams.get('ticket') || '-';
+        document.getElementById('placa').textContent = urlParams.get('placa') || '-';
+        document.getElementById('tipoVehiculo').textContent = urlParams.get('tipo') || '-';
+        document.getElementById('horaIngreso').textContent = urlParams.get('horaIngreso') || '-';
+        document.getElementById('horaSalida').textContent = urlParams.get('horaSalida') || '-';
+        document.getElementById('tiempoEstacionado').textContent = urlParams.get('tiempo') || '-';
+        document.getElementById('tarifaMinuto').textContent = urlParams.get('tarifa') || '-';
+        document.getElementById('totalPagar').textContent = urlParams.get('total') || '-';
+        document.getElementById('fechaEmision').textContent = urlParams.get('fecha') || '-';
+    </script>
+</body>
+</html>

@@ -5,118 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consola Administrativa - Parking</title>
     <link rel="stylesheet" href="css/main.css">
-    <style>
-        .layout-admin {
-            display: flex;
-            min-height: 100vh;
-            background: var(--color-fondo-claro);
-        }
-        .sidebar-admin {
-            width: 220px;
-            background: var(--color-principal);
-            color: var(--color-texto-claro);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 40px;
-            min-height: 100vh;
-        }
-        .sidebar-admin h2 {
-            margin-bottom: 2rem;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-        .sidebar-admin ul {
-            list-style: none;
-            width: 100%;
-            padding-left: 0;
-        }
-        .sidebar-admin ul li {
-            width: 100%;
-        }
-        .sidebar-admin ul li a {
-            display: block;
-            color: var(--color-texto-claro);
-            padding: 15px 30px;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: background 0.2s;
-        }
-        .sidebar-admin ul li a:hover,
-        .sidebar-admin ul li.active a {
-            background: var(--color-botones-sec);
-            color: white;
-        }
-        .panel-zona {
-            flex:1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 50px 0 30px 0;
-        }
-        .panel-zona-inner {
-            display: flex;
-            gap: 36px;
-        }
-        .admin-card-box {
-            background: var(--color-card);
-            box-shadow: 0 2px 16px var(--color-sombra);
-            border-radius: 14px;
-            padding: 32px 38px 28px 38px;
-            min-width: 340px;
-            max-width: 400px;
-        }
-        .admin-card-box h3 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--color-principal);
-            margin-bottom: 20px;
-        }
-        .field-label {
-            display: block;
-            color: var(--color-texto-principal);
-            font-weight: bold;
-            margin-bottom: 8px;
-            margin-top: 14px;
-        }
-        .input-admin {
-            width: 100%;
-            padding: 14px 15px;
-            border-radius: 8px;
-            border: 2px solid var(--color-borde);
-            font-size: 16px;
-            background: var(--color-fondo-claro);
-            font-family: 'Roboto', sans-serif;
-            margin-bottom: 16px;
-            transition: border-color 0.3s;
-        }
-        .input-admin:focus {
-            outline: none;
-            border-color: var(--color-botones-sec);
-        }
-        .admin-btn {
-            display: block;
-            width: 100%;
-            background: var(--color-principal);
-            color: var(--color-texto-claro);
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            padding: 13px 0;
-            margin-top: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .admin-btn:hover {
-            background: var(--color-botones-sec);
-            color: white;
-        }
-        .info-salida, .info-ingreso {
-            margin-top: 16px;
-            min-height: 40px;
-        }
-    </style>
 </head>
 <body>
 <div class="layout-admin">
@@ -189,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(res => res.json())
         .then(respuesta => {
             if (respuesta.success) {
-                msgIngreso.textContent = respuesta.mensaje;
+                msgIngreso.innerHTML = `${respuesta.mensaje}<br><a href="${respuesta.ticketUrl}" target="_blank" class="link-action" onclick="limpiarMensajeIngreso()">🎫 Ver Ticket</a>`;
                 msgIngreso.style.color = '#56b881';
                 formIngreso.reset();
             } else {
@@ -224,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(res => res.json())
         .then(respuesta => {
             if (respuesta.success) {
-                msgSalida.innerHTML = `<b>Factura generada</b>:<br>Valor a pagar: <span style='color:#3d5a80;font-size:1.3em'>${respuesta.valor_pagar}</span> <br>${respuesta.mensaje || ''}`;
+                msgSalida.innerHTML = `<b>Factura generada</b>:<br>Valor a pagar: <span style='color:#3d5a80;font-size:1.3em'>${respuesta.valor_pagar}</span> <br>${respuesta.mensaje || ''}<br><a href="${respuesta.facturaUrl}" target="_blank" class="link-action" onclick="limpiarMensajeSalida()">🧾 Ver Factura</a>`;
                 msgSalida.style.color = '#56b881';
                 formSalida.reset();
             } else {
@@ -238,6 +126,23 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+// Funciones para limpiar mensajes
+function limpiarMensajeIngreso() {
+    setTimeout(() => {
+        const msgIngreso = document.getElementById('msgIngreso');
+        msgIngreso.textContent = '';
+        msgIngreso.style.color = '';
+    }, 1000);
+}
+
+function limpiarMensajeSalida() {
+    setTimeout(() => {
+        const msgSalida = document.getElementById('msgSalida');
+        msgSalida.textContent = '';
+        msgSalida.style.color = '';
+    }, 1000);
+}
 </script>
 </body>
 </html>

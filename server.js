@@ -158,10 +158,14 @@ function abrirTicket(req, res, idVehiculo, tipo_vehiculo, esNuevo) {
           [horaActual, idVehiculo, idTarifa],
           (err, result) => {
             if (err) return res.json({ success: false, mensaje: 'Error creando ticket.' });
+            // Generar URL para ver el ticket
+            const ticketUrl = `/ticket.html?ticket=${result.insertId}&placa=${req.body.placa}&tipo=${tipo_vehiculo}&hora=${horaActual.toLocaleTimeString()}&fecha=${horaActual.toLocaleDateString()}`;
+            
             return res.json({ 
                 success: true, 
                 mensaje: `Ingreso registrado exitosamente${esNuevo ? ' (vehículo creado)' : ''}.`,
-                ticket: result.insertId
+                ticket: result.insertId,
+                ticketUrl: ticketUrl
             });
           });
     });
@@ -217,10 +221,16 @@ definirMontoYFacturar = (req, res, ticket, vehiculo, tarifa) => {
                             console.error('Error generando factura:', err);
                             return res.json({ success: false, mensaje: 'Error generando factura: ' + err.message });
                         }
+                        // Generar URL para ver la factura
+                        const placaFactura = vehiculo.placa || req.body.placa; // Usar placa de BD o del request como respaldo
+                        console.log('Placa para factura:', placaFactura, 'Vehiculo objeto:', vehiculo);
+                        const facturaUrl = `/factura.html?factura=${result.insertId}&ticket=${idTicket}&placa=${placaFactura}&tipo=${vehiculo.tipo_vehiculo}&horaIngreso=${horaEntrada.toLocaleTimeString()}&horaSalida=${horaSalida.toLocaleTimeString()}&tiempo=${minutos} minutos&tarifa=$${valorUnitario}/min&total=$${montoTotal.toLocaleString()}&fecha=${horaSalida.toLocaleDateString()}`;
+                        
                         return res.json({
                             success: true,
                             mensaje: `Salida registrada y factura generada. (${minutos} minutos x $${valorUnitario}/minuto)` ,
-                            valor_pagar: `$${montoTotal.toLocaleString()}`
+                            valor_pagar: `$${montoTotal.toLocaleString()}`,
+                            facturaUrl: facturaUrl
                         });
                 });
             }
@@ -231,7 +241,7 @@ definirMontoYFacturar = (req, res, ticket, vehiculo, tarifa) => {
 app.post('/salida-vehiculo', express.json(), (req, res) => {
     const { placa } = req.body;
     if (!placa) return res.json({ success: false, mensaje: 'Debe ingresar la placa.' });
-    db.query('SELECT id_vehiculo, tipo_vehiculo FROM VEHICULO WHERE placa = ?', [placa], (err, rows) => {
+    db.query('SELECT id_vehiculo, tipo_vehiculo, placa FROM VEHICULO WHERE placa = ?', [placa], (err, rows) => {
         if (err || rows.length === 0) return res.json({ success: false, mensaje: 'Vehículo no encontrado.' });
         const idVehiculo = rows[0].id_vehiculo;
         db.query('SELECT * FROM TICKET WHERE id_vehiculo = ? AND estado_ticket = "Activo" AND hora_salida IS NULL', [idVehiculo], (err, tickets) => {
