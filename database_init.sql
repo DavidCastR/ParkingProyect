@@ -12,14 +12,14 @@ CREATE TABLE IF NOT EXISTS PERSONA (
     nombres VARCHAR(60) NOT NULL,
     apellidos VARCHAR(60) NOT NULL,
     telefono VARCHAR(20),
-    email VARCHAR(80),
+    email VARCHAR(80)
 );
 
 -- Tabla CLIENTE
 CREATE TABLE IF NOT EXISTS CLIENTE (
     id_cliente INT PRIMARY KEY AUTO_INCREMENT,
     id_persona INT NOT NULL,
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
     CONSTRAINT FK_CLIENTE_PERSONA
         FOREIGN KEY (id_persona) REFERENCES PERSONA(id_persona)
         ON UPDATE CASCADE
@@ -176,20 +176,34 @@ INSERT INTO ESPACIO_PARQUEO (numero_espacio, tipo_espacio, estado, id_parqueader
 ('C02', 'Camioneta', 'Disponible', 1),
 ('C03', 'Camioneta', 'Disponible', 1);
 
--- Insertar tarifas
+-- Insertar tarifas por minuto
 INSERT INTO TARIFA (tipo_tarifa, valor_unitario, tipo_vehiculo) VALUES
-('Por hora', 2000.00, 'Carro'),
-('Por hora', 1000.00, 'Moto'),
-('Por hora', 3000.00, 'Camioneta'),
-('Por día', 15000.00, 'Carro'),
-('Por día', 8000.00, 'Moto'),
-('Por día', 20000.00, 'Camioneta');
+('Minuto', 70.00, 'Automovil'),
+('Minuto', 40.00, 'Motocicleta'),
+('Minuto', 100.00, 'Camion'),
+('Minuto', 30.00, 'Bicicleta');
 
 -- Insertar métodos de pago
 INSERT INTO METODO_PAGO (tipo_metodo, referencia_pago) VALUES
 ('Efectivo', 'Pago en efectivo'),
 ('Tarjeta', 'Pago con tarjeta'),
 ('Transferencia', 'Transferencia bancaria');
+
+-- Insertar usuarios iniciales
+
+-- 1. Cliente Genérico (para vehículos sin cliente específico)
+INSERT INTO PERSONA (tipo_documento, numero_documento, nombres, apellidos, telefono, email) VALUES
+('CC', '0', 'Cliente', 'Generico', '0', 'noemail');
+
+INSERT INTO CLIENTE (id_persona, password) VALUES
+(1, 'nopassword');
+
+-- 2. Juan Empleado (empleado del sistema)
+INSERT INTO PERSONA (tipo_documento, numero_documento, nombres, apellidos, telefono, email) VALUES
+('CC', '123456789', 'Juan', 'Empleado', '3001234567', 'empleado@parking.com');
+
+INSERT INTO EMPLEADO (id_persona, id_carnet, password_hash) VALUES
+(2, 'CARNET001', 'contrasena123');
 
 -- Mostrar mensaje de éxito
 SELECT 'Base de datos inicializada correctamente' as mensaje;
