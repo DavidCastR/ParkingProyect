@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans&display=swap" rel="stylesheet">
+  
+  <title>Vehiculos registrados  </title>
+
+
+  <style>
+    .attribution { font-size: 11px; text-align: center; color: #2471a3 }
+    .attribution a { color: hsl(0, 100%, 58%); }
+    .attribution {margin-top: 50px;}
+   
+    .imagen_vehiculo{ 
+      
+  display: inline-block;
+  text-align: center;
+  border: 3px solid blue;
+  padding: 5px;
+}
+.imagen_vehiculo img {
+    text-align: center;
+  display: block;
+  max-width: 100%;
+  height: 300px;
+}
+      .contenedor_centrado {
+  text-align: center;
+  margin-top: 30px;           
+}
+  
+    h1{
+      
+        font-family: "PT Sans", sans-serif;
+        /*font-family:'Lucida Sans';*/
+        text-align: center;
+      /*  width: 50px */
+         height: 50px;
+        font-size: 200%;
+        
+      }
+     #Panel_principal{
+      
+      text-align: center;
+      margin: auto;
+      margin-top:  5%;
+      background-color: lightskyblue;
+      height:800px; width: 600px ;
+      font-family: Georgia;
+     }
+     .boton-agregar-vh {
+  background-color: white;
+  color: #2471a3;                /* azul agradable */
+  font-family: "PT Sans", sans-serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  border: 2px solid #2471a3;
+  border-radius: 10px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 30px;
+}
+
+/* Efecto al pasar el mouse */
+.boton-agregar-vh:hover {
+  transform: scale(1.08);       
+  background-color: #2471a3;    
+  color: black;                 
+}
+     
+  </style>
+</head>
+<body bgcolor="#FFEBEE">
+  
+  <h1>Ingresa a tus vehiculos registrados </h1>
+  <div class="contenedor_centrado">
+  <div class="imagen_vehiculo" >
+    
+  Mira el estado de tus actuales vehiculos
+
+  <img src="/public/img/empty-cars.jpg" height="320px">
+</div> 
+</div>
+<div class="bg-purple-100 p-4 rounded-lg mb-6" id="Panel_principal">
+
+  <h2 class="text-xl font-bold mb-2">En total tienes 0 vehículos</h2>
+  <ul class="text-gray-700">
+    <li><strong></strong></li>
+  </ul>
+  <button class="boton-agregar-vh">Agregar un vehículo</button>
+</div>
+</body>
+</html>
