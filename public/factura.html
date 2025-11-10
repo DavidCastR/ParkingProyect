@@ -22,6 +22,16 @@
             </div>
             
             <div class="factura-info">
+                <span class="factura-label">Parqueadero:</span>
+                <span class="factura-value" id="parqueadero">-</span>
+            </div>
+            
+            <div class="factura-info">
+                <span class="factura-label">Dirección:</span>
+                <span class="factura-value" id="direccion">-</span>
+            </div>
+            
+            <div class="factura-info">
                 <span class="factura-label">Número de Ticket:</span>
                 <span class="factura-value" id="numeroTicket">-</span>
             </div>
@@ -84,6 +94,8 @@
         
         // Llenar los datos de la factura
         document.getElementById('numeroFactura').textContent = urlParams.get('factura') || '-';
+        document.getElementById('parqueadero').textContent = decodeURIComponent(urlParams.get('parqueadero') || '-');
+        document.getElementById('direccion').textContent = decodeURIComponent(urlParams.get('direccion') || '-');
         document.getElementById('numeroTicket').textContent = urlParams.get('ticket') || '-';
         document.getElementById('placa').textContent = urlParams.get('placa') || '-';
         document.getElementById('tipoVehiculo').textContent = urlParams.get('tipo') || '-';

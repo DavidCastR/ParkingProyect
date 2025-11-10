@@ -589,6 +589,29 @@ input::placeholder, textarea::placeholder {
     background: var(--color-botones-sec);
     color: white;
 }
+.sidebar-admin .submenu {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0;
+    background: rgba(0, 0, 0, 0.2);
+    width: 100%;
+}
+.sidebar-admin .submenu li {
+    width: 100%;
+}
+.sidebar-admin .submenu li a {
+    padding: 12px 30px 12px 50px;
+    font-size: 0.9rem;
+    display: block;
+    color: var(--color-texto-claro);
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.sidebar-admin .submenu li a:hover,
+.sidebar-admin .submenu li.active a {
+    background: var(--color-botones-sec);
+    color: white;
+}
 .panel-zona {
     flex: 1;
     display: flex;
@@ -599,6 +622,19 @@ input::placeholder, textarea::placeholder {
 .panel-zona-inner {
     display: flex;
     gap: 36px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Ajuste para sección ingreso-salida */
+#section-ingreso-salida {
+    width: 100%;
+}
+
+#section-ingreso-salida.active {
+    width: 100%;
 }
 .admin-card-box {
     background: var(--color-card);
@@ -654,9 +690,230 @@ input::placeholder, textarea::placeholder {
     background: var(--color-botones-sec);
     color: white;
 }
-.info-salida, .info-ingreso {
+.info-salida, .info-ingreso, .info-registro {
     margin-top: 16px;
     min-height: 40px;
+}
+.section-content {
+    display: none;
+}
+.section-content.active {
+    display: block;
+}
+
+/* ===========================================
+   LAYOUT INGRESO/SALIDA
+   =========================================== */
+.ingreso-salida-container {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.parqueadero-info-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+}
+
+.info-parqueadero-box {
+    margin-top: 15px;
+    padding: 20px;
+    background: var(--color-fondo-claro);
+    border-radius: 8px;
+}
+
+.info-parqueadero-header {
+    margin-bottom: 12px;
+    color: var(--color-texto-principal);
+}
+
+.parqueadero-nombre {
+    font-weight: 600;
+    color: var(--color-principal);
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.parqueadero-direccion {
+    margin-bottom: 15px;
+    color: var(--color-texto-principal);
+}
+
+.contadores-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.contador-box {
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.contador-label {
+    font-size: 0.9rem;
+    color: var(--color-texto-principal);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.contador-valor {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.contador-principal {
+    color: var(--color-principal);
+}
+
+.contador-exito {
+    color: var(--color-exito);
+}
+
+.contador-texto {
+    color: var(--color-texto-principal);
+}
+
+.parqueadero-header-contenedor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.btn-cambiar-parqueadero {
+    background: var(--color-botones-sec);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.btn-cambiar-parqueadero:hover {
+    background: var(--color-botones-hover);
+    color: white;
+}
+
+.formularios-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+}
+
+.formulario-box {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+}
+
+/* ===========================================
+   SECCIÓN VEHÍCULOS
+   =========================================== */
+.vehiculos-container {
+    width: 100%;
+    max-width: 100%;
+}
+
+.vehiculos-lista {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabla-vehiculos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.tabla-vehiculos thead {
+    background: var(--color-principal);
+    color: white;
+}
+
+.tabla-vehiculos th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.tabla-vehiculos tbody tr {
+    border-bottom: 1px solid var(--color-borde);
+    transition: background 0.2s;
+}
+
+.tabla-vehiculos tbody tr:hover {
+    background: var(--color-fondo-claro);
+}
+
+.tabla-vehiculos td {
+    padding: 12px;
+    font-size: 0.9rem;
+    color: var(--color-texto-principal);
+}
+
+.tabla-vehiculos td strong {
+    color: var(--color-principal);
+    font-size: 1rem;
+}
+
+.loading-vehiculos,
+.no-vehiculos {
+    text-align: center;
+    padding: 40px;
+    color: var(--color-texto-principal);
+    font-size: 1rem;
+}
+
+/* Responsive: En pantallas pequeñas, los formularios se apilan */
+@media (max-width: 768px) {
+    .formularios-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .contadores-container {
+        flex-direction: column;
+    }
+    
+    .contador-box {
+        min-width: 100%;
+    }
+    
+    .panel-zona-inner {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 20px;
+    }
+    
+    .ingreso-salida-container {
+        width: 100%;
+    }
+    
+    .tabla-vehiculos {
+        font-size: 0.8rem;
+    }
+    
+    .tabla-vehiculos th,
+    .tabla-vehiculos td {
+        padding: 8px;
+    }
 }
 
 /* ===========================================

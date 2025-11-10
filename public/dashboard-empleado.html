@@ -11,60 +11,390 @@
     <nav class="sidebar-admin">
         <h2>Menú Empleado</h2>
         <ul>
-            <li class="active"><a href="#">Ingreso/Salida</a></li>
-            <li><a href="#">Vehículos</a></li>
-            <li><a href="#">Espacios ocupados</a></li>
-            <li><a href="#">Facturación</a></li>
+            <li class="menu-item active" data-section="ingreso-salida"><a href="#">Ingreso/Salida</a></li>
+            <li class="menu-item" data-section="vehiculos"><a href="#">Vehículos</a></li>
+            <li class="menu-item" data-section="espacios"><a href="#">Espacios ocupados</a></li>
+            <li class="menu-item" data-section="facturacion"><a href="#">Facturación</a></li>
+            <li class="menu-item" data-section="administracion"><a href="#">Administración</a>
+                <ul class="submenu" style="display: none;">
+                    <li class="submenu-item active" data-section="config-parqueadero"><a href="#">Configuración Parqueadero</a></li>
+                </ul>
+            </li>
             <li><a href="/">Cerrar Sesión</a></li>
         </ul>
     </nav>
     <section class="panel-zona">
       <div class="panel-zona-inner">
-        <!-- INGRESO VEHÍCULO -->
-        <div class="admin-card-box">
-            <h3>Ingreso</h3>
-            <form id="formIngreso">
-                <label class="field-label" for="ingresoPlaca">Placa</label>
-                <input class="input-admin" type="text" id="ingresoPlaca" name="placa" placeholder="Ej: ABC123" maxlength="10" required>
+        <!-- SECCIÓN INGRESO/SALIDA -->
+        <div id="section-ingreso-salida" class="section-content active">
+          <div class="ingreso-salida-container">
+            <!-- SELECTOR DE PARQUEADERO Y ESTADÍSTICAS -->
+            <div class="admin-card-box parqueadero-info-card">
+                <!-- SELECTOR DE PARQUEADERO (se muestra inicialmente) -->
+                <div id="selectorParqueadero">
+                    <h3>Seleccionar Parqueadero</h3>
+                    <label class="field-label" for="selectParqueadero">Parqueadero</label>
+                    <select class="input-admin" id="selectParqueadero" name="parqueadero" required>
+                        <option value="">-- Seleccione un parqueadero --</option>
+                    </select>
+                </div>
+                
+                <!-- INFORMACIÓN DEL PARQUEADERO (se oculta inicialmente) -->
+                <div id="infoParqueadero" class="info-parqueadero-box" style="display: none;">
+                    <div class="parqueadero-header-contenedor">
+                        <h3 style="margin: 0;">Parqueadero Seleccionado</h3>
+                        <button type="button" id="btnCambiarParqueadero" class="btn-cambiar-parqueadero">Cambiar Parqueadero</button>
+                    </div>
+                    <div class="info-parqueadero-header"><strong>Información del Parqueadero:</strong></div>
+                    <div id="parqueaderoNombre" class="parqueadero-nombre"></div>
+                    <div id="parqueaderoDireccion" class="parqueadero-direccion"></div>
+                    <div class="contadores-container">
+                        <div class="contador-box">
+                            <div class="contador-label">Vehículos Ingresados</div>
+                            <div id="contadorIngresados" class="contador-valor contador-principal">0</div>
+                        </div>
+                        <div class="contador-box">
+                            <div class="contador-label">Espacios Disponibles</div>
+                            <div id="contadorDisponibles" class="contador-valor contador-exito">0</div>
+                        </div>
+                        <div class="contador-box">
+                            <div class="contador-label">Capacidad Total</div>
+                            <div id="capacidadTotal" class="contador-valor contador-texto">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- CONTENEDOR DE INGRESO Y SALIDA -->
+            <div class="formularios-container">
+              <!-- INGRESO VEHÍCULO -->
+              <div class="admin-card-box formulario-box" id="cardIngreso" style="opacity: 0.5; pointer-events: none;">
+                  <h3>Ingreso</h3>
+                  <form id="formIngreso">
+                      <label class="field-label" for="ingresoPlaca">Placa</label>
+                      <input class="input-admin" type="text" id="ingresoPlaca" name="placa" placeholder="Ej: ABC123" maxlength="10" required disabled>
 
-                <label class="field-label" for="ingresoTipo">Tipo de Vehículo</label>
-                <select class="input-admin" id="ingresoTipo" name="tipo_vehiculo" required>
-                  <option value="Automovil">Automóvil</option>
-                  <option value="Motocicleta">Motocicleta</option>
-                  <option value="Camion">Camión</option>
-                  <option value="Bicicleta">Bicicleta</option>
-                </select>
-                <button class="admin-btn" type="submit">Registrar ingreso</button>
-                <div class="info-ingreso" id="msgIngreso"></div>
-            </form>
+                      <label class="field-label" for="ingresoTipo">Tipo de Vehículo</label>
+                      <select class="input-admin" id="ingresoTipo" name="tipo_vehiculo" required disabled>
+                        <option value="Automovil">Automóvil</option>
+                        <option value="Motocicleta">Motocicleta</option>
+                        <option value="Camion">Camión</option>
+                        <option value="Bicicleta">Bicicleta</option>
+                      </select>
+                      <button class="admin-btn" type="submit" disabled>Registrar ingreso</button>
+                      <div class="info-ingreso" id="msgIngreso"></div>
+                  </form>
+              </div>
+              <!-- SALIDA VEHÍCULO -->
+              <div class="admin-card-box formulario-box" id="cardSalida" style="opacity: 0.5; pointer-events: none;">
+                  <h3>Salida</h3>
+                  <form id="formSalida">
+                      <label class="field-label" for="salidaPlaca">Placa</label>
+                      <input class="input-admin" type="text" id="salidaPlaca" name="placa" placeholder="Ej: ABC123" maxlength="10" required disabled>
+                      <button class="admin-btn" type="submit" disabled>Generar factura salida</button>
+                      <div class="info-salida" id="msgSalida"></div>
+                  </form>
+              </div>
+            </div>
+          </div>
         </div>
-        <!-- SALIDA VEHÍCULO -->
-        <div class="admin-card-box">
-            <h3>Salida</h3>
-            <form id="formSalida">
-                <label class="field-label" for="salidaPlaca">Placa</label>
-                <input class="input-admin" type="text" id="salidaPlaca" name="placa" placeholder="Ej: ABC123" maxlength="10" required>
-                <button class="admin-btn" type="submit">Generar factura salida</button>
-                <div class="info-salida" id="msgSalida"></div>
+
+        <!-- SECCIÓN VEHÍCULOS -->
+        <div id="section-vehiculos" class="section-content" style="display: none;">
+          <div class="vehiculos-container">
+            <div class="admin-card-box" style="width: 100%; max-width: 100%;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Vehículos Ingresados</h3>
+                <button class="admin-btn" id="btnActualizarVehiculos" style="width: auto; padding: 10px 20px; margin: 0;">🔄 Actualizar</button>
+              </div>
+              <div id="vehiculosLista" class="vehiculos-lista">
+                <div class="loading-vehiculos">Cargando vehículos...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN ESPACIOS OCUPADOS -->
+        <div id="section-espacios" class="section-content" style="display: none;">
+          <div class="admin-card-box">
+              <h3>Espacios Ocupados</h3>
+              <p>Funcionalidad en desarrollo...</p>
+          </div>
+        </div>
+
+        <!-- SECCIÓN FACTURACIÓN -->
+        <div id="section-facturacion" class="section-content" style="display: none;">
+          <div class="admin-card-box">
+              <h3>Facturación</h3>
+              <p>Funcionalidad en desarrollo...</p>
+          </div>
+        </div>
+
+        <!-- SECCIÓN CONFIGURACIÓN PARQUEADERO -->
+        <div id="section-config-parqueadero" class="section-content" style="display: none;">
+          <div class="admin-card-box">
+            <h3>Registro de Parqueadero</h3>
+            <form id="formParqueadero">
+              <label class="field-label" for="idParqueadero">ID del Parqueadero (Opcional)</label>
+              <input class="input-admin" type="text" id="idParqueadero" name="id" placeholder="Dejar vacío para auto-generar">
+
+              <label class="field-label" for="nombreParqueadero">Nombre del Parqueadero</label>
+              <input class="input-admin" type="text" id="nombreParqueadero" name="nombre" required>
+
+              <label class="field-label" for="horario">Horario</label>
+              <input class="input-admin" type="text" id="horario" name="horario" placeholder="Ej: 8:00 AM - 10:00 PM" required>
+
+              <label class="field-label" for="capacidad">Capacidad</label>
+              <input class="input-admin" type="number" id="capacidad" name="capacidad" required>
+
+              <label class="field-label" for="ubicacion">Dirección</label>
+              <input class="input-admin" type="text" id="ubicacion" name="direccion" required>
+
+              <label class="field-label" for="tipo">Tipo de Parqueadero</label>
+              <select class="input-admin" id="tipo" name="tipo" required>
+                <option value="Publico">Público</option>
+                <option value="Privado">Privado</option>
+                <option value="Mixto">Mixto</option>
+              </select>
+
+              <button class="admin-btn" type="submit">Registrar Parqueadero</button>
+              <div class="info-registro" id="msgRegistro"></div>
             </form>
+          </div>
         </div>
       </div>
     </section>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // ---------- Navegación por secciones ----------
+    const menuItems = document.querySelectorAll('.menu-item');
+    const submenuItems = document.querySelectorAll('.submenu-item');
+    const sections = document.querySelectorAll('.section-content');
+    const submenu = document.querySelector('.submenu');
+
+    // Manejo de clic en items del menú principal
+    menuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sectionName = this.getAttribute('data-section');
+            
+            if (sectionName === 'administracion') {
+                // Toggle del submenú
+                if (submenu.style.display === 'none') {
+                    submenu.style.display = 'block';
+                } else {
+                    submenu.style.display = 'none';
+                }
+                return;
+            }
+
+            // Ocultar submenú si se hace clic en otro item
+            if (submenu) submenu.style.display = 'none';
+
+            // Actualizar clases activas
+            menuItems.forEach(mi => mi.classList.remove('active'));
+            this.classList.add('active');
+
+            // Mostrar sección correspondiente
+            sections.forEach(sec => {
+                sec.classList.remove('active');
+                sec.style.display = 'none';
+            });
+            const targetSection = document.getElementById('section-' + sectionName);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                targetSection.style.display = 'block';
+                
+                // Si es la sección de vehículos, cargar datos
+                if (sectionName === 'vehiculos') {
+                    cargarVehiculosIngresados();
+                }
+            }
+        });
+    });
+
+    // Manejo de clic en items del submenú
+    submenuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sectionName = this.getAttribute('data-section');
+            
+            // Actualizar clases activas
+            submenuItems.forEach(smi => smi.classList.remove('active'));
+            this.classList.add('active');
+
+            // Mostrar sección correspondiente
+            sections.forEach(sec => {
+                sec.classList.remove('active');
+                sec.style.display = 'none';
+            });
+            const targetSection = document.getElementById('section-' + sectionName);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                targetSection.style.display = 'block';
+            }
+        });
+    });
+
+    // ---------- Cargar Parqueaderos ----------
+    const selectParqueadero = document.getElementById('selectParqueadero');
+    let parqueaderoSeleccionado = null;
+
+    function cargarParqueaderos() {
+        fetch('/obtener-parqueaderos')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    selectParqueadero.innerHTML = '<option value="">-- Seleccione un parqueadero --</option>';
+                    data.parqueaderos.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p.id_parqueadero;
+                        option.textContent = `${p.nombre} - ${p.direccion}`;
+                        selectParqueadero.appendChild(option);
+                    });
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando parqueaderos:', err);
+            });
+    }
+
+    // Cargar parqueaderos al iniciar
+    cargarParqueaderos();
+
+    // Función para mostrar selector y ocultar información
+    function mostrarSelector() {
+        const selectorParqueadero = document.getElementById('selectorParqueadero');
+        const infoParqueadero = document.getElementById('infoParqueadero');
+        const cardIngreso = document.getElementById('cardIngreso');
+        const cardSalida = document.getElementById('cardSalida');
+        
+        selectorParqueadero.style.display = 'block';
+        infoParqueadero.style.display = 'none';
+        
+        // Deshabilitar formularios
+        cardIngreso.style.opacity = '0.5';
+        cardIngreso.style.pointerEvents = 'none';
+        cardSalida.style.opacity = '0.5';
+        cardSalida.style.pointerEvents = 'none';
+        
+        const inputsIngreso = formIngreso.querySelectorAll('input, select, button');
+        inputsIngreso.forEach(input => input.disabled = true);
+        
+        const inputsSalida = formSalida.querySelectorAll('input, button');
+        inputsSalida.forEach(input => input.disabled = true);
+        
+        // Limpiar selector
+        selectParqueadero.value = '';
+        
+        // Detener actualización de estadísticas
+        if (window.intervalEstadisticas) {
+            clearInterval(window.intervalEstadisticas);
+            window.intervalEstadisticas = null;
+        }
+    }
+
+    // Función para mostrar información y ocultar selector
+    function mostrarInfoParqueadero(idParqueadero) {
+        const selectorParqueadero = document.getElementById('selectorParqueadero');
+        const infoParqueadero = document.getElementById('infoParqueadero');
+        const cardIngreso = document.getElementById('cardIngreso');
+        const cardSalida = document.getElementById('cardSalida');
+        
+        selectorParqueadero.style.display = 'none';
+        infoParqueadero.style.display = 'block';
+        
+        // Habilitar formularios
+        cardIngreso.style.opacity = '1';
+        cardIngreso.style.pointerEvents = 'auto';
+        cardSalida.style.opacity = '1';
+        cardSalida.style.pointerEvents = 'auto';
+        
+        const inputsIngreso = formIngreso.querySelectorAll('input, select, button');
+        inputsIngreso.forEach(input => input.disabled = false);
+        
+        const inputsSalida = formSalida.querySelectorAll('input, button');
+        inputsSalida.forEach(input => input.disabled = false);
+
+        // Cargar información del parqueadero y estadísticas
+        cargarInfoParqueadero(idParqueadero);
+        actualizarEstadisticas(idParqueadero);
+        
+        // Actualizar estadísticas cada 5 segundos
+        if (window.intervalEstadisticas) {
+            clearInterval(window.intervalEstadisticas);
+        }
+        window.intervalEstadisticas = setInterval(() => {
+            actualizarEstadisticas(idParqueadero);
+        }, 5000);
+    }
+
+    // Manejar cambio de parqueadero
+    selectParqueadero.addEventListener('change', function() {
+        const idParqueadero = this.value;
+        if (idParqueadero) {
+            mostrarInfoParqueadero(idParqueadero);
+        }
+    });
+
+    // Botón cambiar parqueadero
+    const btnCambiarParqueadero = document.getElementById('btnCambiarParqueadero');
+    btnCambiarParqueadero.addEventListener('click', function() {
+        mostrarSelector();
+    });
+
+    function cargarInfoParqueadero(idParqueadero) {
+        fetch(`/obtener-parqueadero/${idParqueadero}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    parqueaderoSeleccionado = data.parqueadero;
+                    document.getElementById('parqueaderoNombre').textContent = data.parqueadero.nombre;
+                    document.getElementById('parqueaderoDireccion').textContent = data.parqueadero.direccion;
+                    document.getElementById('capacidadTotal').textContent = data.parqueadero.capacidad_total || 0;
+                    document.getElementById('infoParqueadero').style.display = 'block';
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando información del parqueadero:', err);
+            });
+    }
+
+    function actualizarEstadisticas(idParqueadero) {
+        fetch(`/estadisticas-parqueadero/${idParqueadero}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('contadorIngresados').textContent = data.vehiculosIngresados || 0;
+                    const disponibles = (parqueaderoSeleccionado?.capacidad_total || 0) - (data.vehiculosIngresados || 0);
+                    document.getElementById('contadorDisponibles').textContent = Math.max(0, disponibles);
+                }
+            })
+            .catch(err => {
+                console.error('Error actualizando estadísticas:', err);
+            });
+    }
+
     // ---------- Ingreso ----------
     const formIngreso = document.getElementById('formIngreso');
     const msgIngreso = document.getElementById('msgIngreso');
 
     formIngreso.addEventListener('submit', function (e) {
         e.preventDefault();
+        const idParqueadero = selectParqueadero.value;
+        if (!idParqueadero) {
+            msgIngreso.textContent = 'Debe seleccionar un parqueadero primero.';
+            msgIngreso.style.color = '#e76f51';
+            return;
+        }
+
         msgIngreso.textContent = 'Procesando ingreso...';
         msgIngreso.style.color = '';
 
         const datos = {
             placa: formIngreso.placa.value.trim().toUpperCase(),
-            tipo_vehiculo: formIngreso.tipo_vehiculo.value
+            tipo_vehiculo: formIngreso.tipo_vehiculo.value,
+            id_parqueadero: parseInt(idParqueadero)
         };
 
         fetch('/ingreso-vehiculo', {
@@ -80,6 +410,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 msgIngreso.innerHTML = `${respuesta.mensaje}<br><a href="${respuesta.ticketUrl}" target="_blank" class="link-action" onclick="limpiarMensajeIngreso()">🎫 Ver Ticket</a>`;
                 msgIngreso.style.color = '#56b881';
                 formIngreso.reset();
+                // Actualizar estadísticas después del ingreso
+                actualizarEstadisticas(idParqueadero);
             } else {
                 msgIngreso.textContent = respuesta.mensaje || 'Ocurrió un error en el registro.';
                 msgIngreso.style.color = '#e76f51';
@@ -97,11 +429,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     formSalida.addEventListener('submit', function (e) {
         e.preventDefault();
+        const idParqueadero = selectParqueadero.value;
+        if (!idParqueadero) {
+            msgSalida.textContent = 'Debe seleccionar un parqueadero primero.';
+            msgSalida.style.color = '#e76f51';
+            return;
+        }
+
         msgSalida.textContent = 'Procesando salida...';
         msgSalida.style.color = '';
 
         const datos = {
             placa: formSalida.placa.value.trim().toUpperCase(),
+            id_parqueadero: parseInt(idParqueadero)
         };
 
         fetch('/salida-vehiculo', {
@@ -115,6 +455,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 msgSalida.innerHTML = `<b>Factura generada</b>:<br>Valor a pagar: <span style='color:#3d5a80;font-size:1.3em'>${respuesta.valor_pagar}</span> <br>${respuesta.mensaje || ''}<br><a href="${respuesta.facturaUrl}" target="_blank" class="link-action" onclick="limpiarMensajeSalida()">🧾 Ver Factura</a>`;
                 msgSalida.style.color = '#56b881';
                 formSalida.reset();
+                // Actualizar estadísticas después de la salida
+                actualizarEstadisticas(idParqueadero);
             } else {
                 msgSalida.textContent = respuesta.mensaje || 'Error procesando salida.';
                 msgSalida.style.color = '#e76f51';
@@ -123,6 +465,123 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(err => {
             msgSalida.textContent = 'Error de red o del servidor.';
             msgSalida.style.color = '#e76f51';
+        });
+    });
+
+    // ---------- Cargar Vehículos Ingresados ----------
+    function cargarVehiculosIngresados() {
+        const vehiculosLista = document.getElementById('vehiculosLista');
+        vehiculosLista.innerHTML = '<div class="loading-vehiculos">Cargando vehículos...</div>';
+
+        fetch('/vehiculos-ingresados')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarVehiculos(data.vehiculos);
+                } else {
+                    vehiculosLista.innerHTML = '<div class="no-vehiculos">No se pudieron cargar los vehículos.</div>';
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando vehículos:', err);
+                vehiculosLista.innerHTML = '<div class="no-vehiculos">Error al cargar los vehículos.</div>';
+            });
+    }
+
+    function mostrarVehiculos(vehiculos) {
+        const vehiculosLista = document.getElementById('vehiculosLista');
+        
+        if (vehiculos.length === 0) {
+            vehiculosLista.innerHTML = '<div class="no-vehiculos">No hay vehículos ingresados en este momento.</div>';
+            return;
+        }
+
+        vehiculosLista.innerHTML = `
+            <table class="tabla-vehiculos">
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Tipo</th>
+                        <th>Marca/Modelo</th>
+                        <th>Color</th>
+                        <th>Parqueadero</th>
+                        <th>Hora Ingreso</th>
+                        <th>Tiempo Estacionado</th>
+                        <th>Ticket</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${vehiculos.map(vehiculo => {
+                        const horaEntrada = new Date(vehiculo.hora_entrada);
+                        const minutosEstacionado = vehiculo.minutos_estacionado || 0;
+                        const horas = Math.floor(minutosEstacionado / 60);
+                        const minutos = minutosEstacionado % 60;
+                        const tiempoTexto = horas > 0 ? `${horas}h ${minutos}m` : `${minutos}m`;
+                        
+                        return `
+                            <tr>
+                                <td><strong>${vehiculo.placa}</strong></td>
+                                <td>${vehiculo.tipo_vehiculo || '-'}</td>
+                                <td>${(vehiculo.marca || '') + ' ' + (vehiculo.modelo || '') || '-'}</td>
+                                <td>${vehiculo.color || '-'}</td>
+                                <td>${vehiculo.nombre_parqueadero || 'No asignado'}</td>
+                                <td>${horaEntrada.toLocaleTimeString()}</td>
+                                <td>${tiempoTexto}</td>
+                                <td>#${vehiculo.id_ticket}</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    // Botón actualizar vehículos
+    const btnActualizarVehiculos = document.getElementById('btnActualizarVehiculos');
+    if (btnActualizarVehiculos) {
+        btnActualizarVehiculos.addEventListener('click', function() {
+            cargarVehiculosIngresados();
+        });
+    }
+
+    // ---------- Registro Parqueadero ----------
+    const formParqueadero = document.getElementById('formParqueadero');
+    const msgRegistro = document.getElementById('msgRegistro');
+
+    formParqueadero.addEventListener('submit', function (e) {
+        e.preventDefault();
+        msgRegistro.textContent = 'Procesando registro...';
+        msgRegistro.style.color = '';
+
+        const idValue = document.getElementById('idParqueadero').value.trim();
+        const datos = {
+            id: idValue || null,
+            nombre: document.getElementById('nombreParqueadero').value.trim(),
+            horario: document.getElementById('horario').value.trim(),
+            capacidad: parseInt(document.getElementById('capacidad').value.trim(), 10),
+            direccion: document.getElementById('ubicacion').value.trim(),
+            tipo: document.getElementById('tipo').value
+        };
+
+        fetch('/registrar-parqueadero', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        })
+        .then(res => res.json())
+        .then(respuesta => {
+            if (respuesta.success) {
+                msgRegistro.textContent = 'Parqueadero registrado correctamente.';
+                msgRegistro.style.color = '#56b881';
+                formParqueadero.reset();
+            } else {
+                msgRegistro.textContent = respuesta.mensaje || 'Error en el registro.';
+                msgRegistro.style.color = '#e76f51';
+            }
+        })
+        .catch(() => {
+            msgRegistro.textContent = 'Error de red o servidor.';
+            msgRegistro.style.color = '#e76f51';
         });
     });
 });

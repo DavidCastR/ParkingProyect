@@ -22,6 +22,16 @@
             </div>
             
             <div class="ticket-info">
+                <span class="ticket-label">Parqueadero:</span>
+                <span class="ticket-value" id="parqueadero">-</span>
+            </div>
+            
+            <div class="ticket-info">
+                <span class="ticket-label">Dirección:</span>
+                <span class="ticket-value" id="direccion">-</span>
+            </div>
+            
+            <div class="ticket-info">
                 <span class="ticket-label">Placa:</span>
                 <span class="ticket-value" id="placa">-</span>
             </div>
@@ -54,6 +64,8 @@
         
         // Llenar los datos del ticket
         document.getElementById('numeroTicket').textContent = urlParams.get('ticket') || '-';
+        document.getElementById('parqueadero').textContent = decodeURIComponent(urlParams.get('parqueadero') || '-');
+        document.getElementById('direccion').textContent = decodeURIComponent(urlParams.get('direccion') || '-');
         document.getElementById('placa').textContent = urlParams.get('placa') || '-';
         document.getElementById('tipoVehiculo').textContent = urlParams.get('tipo') || '-';
         document.getElementById('horaIngreso').textContent = urlParams.get('hora') || '-';
