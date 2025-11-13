@@ -44,6 +44,22 @@ db.connect((err) => {
             });
         }
     });
+    
+    // Verificar y agregar columna estado a PARQUEADERO si no existe
+    db.query(`SHOW COLUMNS FROM PARQUEADERO LIKE 'estado'`, (err, result) => {
+        if (err) {
+            console.error('Error verificando columna estado:', err);
+        } else if (result.length === 0) {
+            // La columna no existe, agregarla
+            db.query(`ALTER TABLE PARQUEADERO ADD COLUMN estado VARCHAR(20) DEFAULT 'Activo'`, (err) => {
+                if (err) {
+                    console.error('Error agregando columna estado:', err);
+                } else {
+                    console.log('Columna estado agregada a la tabla PARQUEADERO');
+                }
+            });
+        }
+    });
 });
 
 app.get('/', (req,res) => {
@@ -138,12 +154,23 @@ app.post('/login', (req, res) => {
 
 const GEN_ID_CLIENTE = 1; // Cambia si tienes otro cliente genérico
 
-// OBTENER PARQUEADEROS
+// OBTENER PARQUEADEROS (todos, para administración)
 app.get('/obtener-parqueaderos', (req, res) => {
-    db.query('SELECT id_parqueadero, nombre, direccion, horario, capacidad_total, tipo_parqueadero FROM PARQUEADERO ORDER BY nombre', (err, result) => {
+    db.query('SELECT id_parqueadero, nombre, direccion, horario, capacidad_total, tipo_parqueadero, COALESCE(estado, "Activo") as estado FROM PARQUEADERO ORDER BY nombre', (err, result) => {
         if (err) {
             console.error('Error obteniendo parqueaderos:', err);
             return res.json({ success: false, mensaje: 'Error obteniendo parqueaderos.' });
+        }
+        return res.json({ success: true, parqueaderos: result });
+    });
+});
+
+// OBTENER PARQUEADEROS ACTIVOS (para selector de ingreso/salida)
+app.get('/obtener-parqueaderos-activos', (req, res) => {
+    db.query('SELECT id_parqueadero, nombre, direccion, horario, capacidad_total, tipo_parqueadero FROM PARQUEADERO WHERE COALESCE(estado, "Activo") = "Activo" ORDER BY nombre', (err, result) => {
+        if (err) {
+            console.error('Error obteniendo parqueaderos activos:', err);
+            return res.json({ success: false, mensaje: 'Error obteniendo parqueaderos activos.' });
         }
         return res.json({ success: true, parqueaderos: result });
     });
@@ -167,30 +194,36 @@ app.get('/obtener-parqueadero/:id', (req, res) => {
 // ESTADÍSTICAS DE PARQUEADERO
 app.get('/estadisticas-parqueadero/:id', (req, res) => {
     const idParqueadero = req.params.id;
-    // Contar tickets activos que están asociados a espacios del parqueadero
-    // Si no hay espacios asignados, contar todos los tickets activos (para compatibilidad)
+    // Contar tickets activos filtrados por id_parqueadero directamente en TICKET
     db.query(`
-        SELECT COUNT(DISTINCT t.id_ticket) as vehiculosIngresados 
+        SELECT COUNT(*) as vehiculosIngresados 
         FROM TICKET t
-        LEFT JOIN ESPACIO_PARQUEO ep ON t.id_espacio = ep.id_espacio
         WHERE t.estado_ticket = 'Activo' 
         AND t.hora_salida IS NULL
-        AND (ep.id_parqueadero = ? OR (t.id_espacio IS NULL AND ? = 1))
-    `, [idParqueadero, idParqueadero], (err, result) => {
+        AND t.id_parqueadero = ?
+    `, [idParqueadero], (err, result) => {
         if (err) {
-            // Si falla, contar todos los tickets activos (fallback)
-            db.query(`
-                SELECT COUNT(*) as vehiculosIngresados 
-                FROM TICKET t
-                WHERE t.estado_ticket = 'Activo' 
-                AND t.hora_salida IS NULL
-            `, (err2, result2) => {
-                if (err2) {
-                    console.error('Error obteniendo estadísticas:', err2);
-                    return res.json({ success: false, mensaje: 'Error obteniendo estadísticas.' });
-                }
-                return res.json({ success: true, vehiculosIngresados: result2[0].vehiculosIngresados || 0 });
-            });
+            // Si falla por columna inexistente, usar consulta alternativa con JOIN
+            if (err.code === 'ER_BAD_FIELD_ERROR' || err.message.includes('Unknown column')) {
+                console.log('Columna id_parqueadero no existe en TICKET, usando consulta alternativa...');
+                db.query(`
+                    SELECT COUNT(DISTINCT t.id_ticket) as vehiculosIngresados 
+                    FROM TICKET t
+                    LEFT JOIN ESPACIO_PARQUEO ep ON t.id_espacio = ep.id_espacio
+                    WHERE t.estado_ticket = 'Activo' 
+                    AND t.hora_salida IS NULL
+                    AND ep.id_parqueadero = ?
+                `, [idParqueadero], (err2, result2) => {
+                    if (err2) {
+                        console.error('Error obteniendo estadísticas:', err2);
+                        return res.json({ success: false, mensaje: 'Error obteniendo estadísticas.' });
+                    }
+                    return res.json({ success: true, vehiculosIngresados: result2[0].vehiculosIngresados || 0 });
+                });
+            } else {
+                console.error('Error obteniendo estadísticas:', err);
+                return res.json({ success: false, mensaje: 'Error obteniendo estadísticas.' });
+            }
         } else {
             return res.json({ success: true, vehiculosIngresados: result[0].vehiculosIngresados || 0 });
         }
@@ -439,12 +472,25 @@ app.get('/vehiculos-ingresados', (req, res) => {
     });
 });
 
-// REGISTRAR PARQUEADERO
+// REGISTRAR/MODIFICAR PARQUEADERO
 app.post('/registrar-parqueadero', express.json(), (req, res) => {
-    const { id, nombre, horario, capacidad, direccion, tipo } = req.body;
+    const { id, nombre, horario, capacidad, direccion, tipo, idEdit } = req.body;
     
     if (!nombre || !direccion || !capacidad || !tipo) {
         return res.json({ success: false, mensaje: 'Datos incompletos. Faltan campos requeridos.' });
+    }
+
+    // Si hay idEdit, es una modificación
+    if (idEdit) {
+        const sqlUpdate = 'UPDATE PARQUEADERO SET nombre = ?, direccion = ?, horario = ?, capacidad_total = ?, tipo_parqueadero = ? WHERE id_parqueadero = ?';
+        db.query(sqlUpdate, [nombre, direccion, horario || null, capacidad, tipo, idEdit], (err, result) => {
+            if (err) {
+                console.error('Error actualizando parqueadero:', err);
+                return res.json({ success: false, mensaje: 'Error actualizando parqueadero.' });
+            }
+            return res.json({ success: true, mensaje: 'Parqueadero actualizado correctamente.' });
+        });
+        return;
     }
 
     // Verificar si el ID ya existe (si se proporciona)
@@ -456,18 +502,10 @@ app.post('/registrar-parqueadero', express.json(), (req, res) => {
             }
             
             if (result.length > 0) {
-                // Actualizar parqueadero existente
-                const sqlUpdate = 'UPDATE PARQUEADERO SET nombre = ?, direccion = ?, horario = ?, capacidad_total = ?, tipo_parqueadero = ? WHERE id_parqueadero = ?';
-                db.query(sqlUpdate, [nombre, direccion, horario || null, capacidad, tipo, id], (err, result) => {
-                    if (err) {
-                        console.error('Error actualizando parqueadero:', err);
-                        return res.json({ success: false, mensaje: 'Error actualizando parqueadero.' });
-                    }
-                    return res.json({ success: true, mensaje: 'Parqueadero actualizado correctamente.' });
-                });
+                return res.json({ success: false, mensaje: 'Ya existe un parqueadero con ese ID. Use la opción modificar.' });
             } else {
                 // Insertar nuevo parqueadero con ID específico
-                const sqlInsert = 'INSERT INTO PARQUEADERO (id_parqueadero, nombre, direccion, horario, capacidad_total, tipo_parqueadero) VALUES (?, ?, ?, ?, ?, ?)';
+                const sqlInsert = 'INSERT INTO PARQUEADERO (id_parqueadero, nombre, direccion, horario, capacidad_total, tipo_parqueadero, estado) VALUES (?, ?, ?, ?, ?, ?, "Activo")';
                 db.query(sqlInsert, [id, nombre, direccion, horario || null, capacidad, tipo], (err, result) => {
                     if (err) {
                         console.error('Error insertando parqueadero:', err);
@@ -479,7 +517,7 @@ app.post('/registrar-parqueadero', express.json(), (req, res) => {
         });
     } else {
         // Insertar nuevo parqueadero sin ID (auto-increment)
-        const sqlInsert = 'INSERT INTO PARQUEADERO (nombre, direccion, horario, capacidad_total, tipo_parqueadero) VALUES (?, ?, ?, ?, ?)';
+        const sqlInsert = 'INSERT INTO PARQUEADERO (nombre, direccion, horario, capacidad_total, tipo_parqueadero, estado) VALUES (?, ?, ?, ?, ?, "Activo")';
         db.query(sqlInsert, [nombre, direccion, horario || null, capacidad, tipo], (err, result) => {
             if (err) {
                 console.error('Error insertando parqueadero:', err);
@@ -488,6 +526,417 @@ app.post('/registrar-parqueadero', express.json(), (req, res) => {
             return res.json({ success: true, mensaje: 'Parqueadero registrado correctamente.' });
         });
     }
+});
+
+// INHABILITAR/HABILITAR PARQUEADERO
+app.post('/cambiar-estado-parqueadero', express.json(), (req, res) => {
+    const { id_parqueadero, estado } = req.body;
+    
+    if (!id_parqueadero || !estado) {
+        return res.json({ success: false, mensaje: 'Datos incompletos.' });
+    }
+    
+    db.query('UPDATE PARQUEADERO SET estado = ? WHERE id_parqueadero = ?', [estado, id_parqueadero], (err, result) => {
+        if (err) {
+            console.error('Error cambiando estado del parqueadero:', err);
+            return res.json({ success: false, mensaje: 'Error cambiando estado del parqueadero.' });
+        }
+        const accion = estado === 'Inactivo' ? 'inhabilitado' : 'habilitado';
+        return res.json({ success: true, mensaje: `Parqueadero ${accion} correctamente.` });
+    });
+});
+
+// ESTADÍSTICAS DE ESPACIOS OCUPADOS POR PARQUEADERO
+app.get('/estadisticas-espacios-ocupados', (req, res) => {
+    // Obtener todos los parqueaderos activos
+    db.query(`
+        SELECT 
+            p.id_parqueadero,
+            p.nombre,
+            p.direccion,
+            p.capacidad_total,
+            COALESCE(p.estado, 'Activo') as estado
+        FROM PARQUEADERO p
+        WHERE COALESCE(p.estado, 'Activo') = 'Activo'
+        ORDER BY p.nombre
+    `, (err, parqueaderos) => {
+        if (err) {
+            console.error('Error obteniendo parqueaderos:', err);
+            return res.json({ success: false, mensaje: 'Error obteniendo parqueaderos.' });
+        }
+
+        if (parqueaderos.length === 0) {
+            return res.json({ success: true, estadisticas: [] });
+        }
+
+        const estadisticas = [];
+        let procesados = 0;
+
+        parqueaderos.forEach((parqueadero) => {
+            // Obtener estadísticas por tipo de vehículo para este parqueadero
+            db.query(`
+                SELECT 
+                    v.tipo_vehiculo,
+                    COUNT(*) as cantidad
+                FROM TICKET t
+                INNER JOIN VEHICULO v ON t.id_vehiculo = v.id_vehiculo
+                WHERE t.estado_ticket = 'Activo' 
+                AND t.hora_salida IS NULL
+                AND t.id_parqueadero = ?
+                GROUP BY v.tipo_vehiculo
+            `, [parqueadero.id_parqueadero], (err, porTipo) => {
+                if (err) {
+                    console.error('Error obteniendo estadísticas por tipo:', err);
+                    porTipo = [];
+                }
+
+                // Contar total de espacios ocupados
+                db.query(`
+                    SELECT COUNT(*) as total_ocupados
+                    FROM TICKET t
+                    WHERE t.estado_ticket = 'Activo' 
+                    AND t.hora_salida IS NULL
+                    AND t.id_parqueadero = ?
+                `, [parqueadero.id_parqueadero], (err, total) => {
+                    if (err) {
+                        console.error('Error obteniendo total ocupados:', err);
+                        total = [{ total_ocupados: 0 }];
+                    }
+
+                    const totalOcupados = total[0].total_ocupados || 0;
+                    const capacidadTotal = parqueadero.capacidad_total || 0;
+                    const disponibles = Math.max(0, capacidadTotal - totalOcupados);
+                    const porcentajeOcupacion = capacidadTotal > 0 
+                        ? ((totalOcupados / capacidadTotal) * 100).toFixed(1) 
+                        : 0;
+
+                    // Organizar por tipo de vehículo
+                    const porTipoMap = {};
+                    porTipo.forEach(item => {
+                        porTipoMap[item.tipo_vehiculo] = item.cantidad;
+                    });
+
+                    estadisticas.push({
+                        id_parqueadero: parqueadero.id_parqueadero,
+                        nombre: parqueadero.nombre,
+                        direccion: parqueadero.direccion,
+                        capacidad_total: capacidadTotal,
+                        total_ocupados: totalOcupados,
+                        disponibles: disponibles,
+                        porcentaje_ocupacion: parseFloat(porcentajeOcupacion),
+                        por_tipo: {
+                            Automovil: porTipoMap['Automovil'] || 0,
+                            Motocicleta: porTipoMap['Motocicleta'] || 0,
+                            Camion: porTipoMap['Camion'] || 0,
+                            Bicicleta: porTipoMap['Bicicleta'] || 0
+                        }
+                    });
+
+                    procesados++;
+                    if (procesados === parqueaderos.length) {
+                        return res.json({ success: true, estadisticas: estadisticas });
+                    }
+                });
+            });
+        });
+    });
+});
+
+// OBTENER TARIFAS
+app.get('/obtener-tarifas', (req, res) => {
+    db.query('SELECT id_tarifa, tipo_tarifa, tipo_vehiculo, valor_unitario FROM TARIFA ORDER BY tipo_vehiculo, valor_unitario', (err, result) => {
+        if (err) {
+            console.error('Error obteniendo tarifas:', err);
+            return res.json({ success: false, mensaje: 'Error obteniendo tarifas.' });
+        }
+        return res.json({ success: true, tarifas: result });
+    });
+});
+
+// OBTENER TARIFA POR ID
+app.get('/obtener-tarifa/:id', (req, res) => {
+    const idTarifa = req.params.id;
+    db.query('SELECT id_tarifa, tipo_tarifa, tipo_vehiculo, valor_unitario FROM TARIFA WHERE id_tarifa = ?', [idTarifa], (err, result) => {
+        if (err) {
+            console.error('Error obteniendo tarifa:', err);
+            return res.json({ success: false, mensaje: 'Error obteniendo tarifa.' });
+        }
+        if (result.length === 0) {
+            return res.json({ success: false, mensaje: 'Tarifa no encontrada.' });
+        }
+        return res.json({ success: true, tarifa: result[0] });
+    });
+});
+
+// REGISTRAR/MODIFICAR TARIFA
+app.post('/registrar-tarifa', express.json(), (req, res) => {
+    const { tipo_tarifa, tipo_vehiculo, valor_unitario, idEdit } = req.body;
+    
+    if (!tipo_tarifa || !tipo_vehiculo || valor_unitario === undefined || valor_unitario === null) {
+        return res.json({ success: false, mensaje: 'Datos incompletos. Faltan campos requeridos.' });
+    }
+
+    // Si hay idEdit, es una modificación
+    if (idEdit) {
+        const sqlUpdate = 'UPDATE TARIFA SET tipo_tarifa = ?, tipo_vehiculo = ?, valor_unitario = ? WHERE id_tarifa = ?';
+        db.query(sqlUpdate, [tipo_tarifa, tipo_vehiculo, valor_unitario, idEdit], (err, result) => {
+            if (err) {
+                console.error('Error actualizando tarifa:', err);
+                return res.json({ success: false, mensaje: 'Error actualizando tarifa.' });
+            }
+            return res.json({ success: true, mensaje: 'Tarifa actualizada correctamente.' });
+        });
+        return;
+    }
+
+    // Insertar nueva tarifa
+    const sqlInsert = 'INSERT INTO TARIFA (tipo_tarifa, tipo_vehiculo, valor_unitario) VALUES (?, ?, ?)';
+    db.query(sqlInsert, [tipo_tarifa, tipo_vehiculo, valor_unitario], (err, result) => {
+        if (err) {
+            console.error('Error insertando tarifa:', err);
+            return res.json({ success: false, mensaje: 'Error registrando tarifa.' });
+        }
+        return res.json({ success: true, mensaje: 'Tarifa registrada correctamente.' });
+    });
+});
+
+// ESTADÍSTICAS DE FACTURACIÓN
+app.get('/estadisticas-facturacion', (req, res) => {
+    const { fechaInicio, fechaFin, idParqueadero } = req.query;
+    
+    let fechaInicioSQL = fechaInicio || 'DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
+    let fechaFinSQL = fechaFin || 'CURDATE()';
+    
+    if (fechaInicio) fechaInicioSQL = `'${fechaInicio}'`;
+    if (fechaFin) fechaFinSQL = `'${fechaFin}'`;
+    
+    let whereParqueadero = '';
+    if (idParqueadero) {
+        whereParqueadero = `AND t.id_parqueadero = ${idParqueadero}`;
+    }
+
+    // Resumen general
+    db.query(`
+        SELECT 
+            COALESCE(SUM(f.valor_total), 0) as total,
+            COUNT(DISTINCT f.id_factura) as total_facturas,
+            COUNT(DISTINCT DATE(f.fecha_emision)) as dias_con_facturas
+        FROM FACTURA f
+        INNER JOIN TICKET t ON f.id_ticket = t.id_ticket
+        WHERE DATE(f.fecha_emision) >= ${fechaInicioSQL}
+        AND DATE(f.fecha_emision) <= ${fechaFinSQL}
+        ${whereParqueadero}
+    `, (err, resumen) => {
+        if (err) {
+            console.error('Error obteniendo resumen:', err);
+            return res.json({ success: false, mensaje: 'Error obteniendo resumen.' });
+        }
+
+        const total = parseFloat(resumen[0].total || 0);
+        const totalFacturas = resumen[0].total_facturas || 0;
+        const diasConFacturas = resumen[0].dias_con_facturas || 1;
+        const promedioDiario = total / diasConFacturas;
+
+        // Mejor día
+        db.query(`
+            SELECT 
+                DATE(f.fecha_emision) as fecha,
+                SUM(f.valor_total) as total_dia
+            FROM FACTURA f
+            INNER JOIN TICKET t ON f.id_ticket = t.id_ticket
+            WHERE DATE(f.fecha_emision) >= ${fechaInicioSQL}
+            AND DATE(f.fecha_emision) <= ${fechaFinSQL}
+            ${whereParqueadero}
+            GROUP BY DATE(f.fecha_emision)
+            ORDER BY total_dia DESC
+            LIMIT 1
+        `, (err, mejorDia) => {
+            if (err) {
+                console.error('Error obteniendo mejor día:', err);
+            }
+
+            const mejorDiaStr = mejorDia && mejorDia.length > 0 
+                ? `${mejorDia[0].fecha} ($${parseFloat(mejorDia[0].total_dia).toLocaleString('es-CO')})`
+                : '-';
+
+            // Ganancias por día
+            db.query(`
+                SELECT 
+                    DATE(f.fecha_emision) as fecha,
+                    SUM(f.valor_total) as total
+                FROM FACTURA f
+                INNER JOIN TICKET t ON f.id_ticket = t.id_ticket
+                WHERE DATE(f.fecha_emision) >= ${fechaInicioSQL}
+                AND DATE(f.fecha_emision) <= ${fechaFinSQL}
+                ${whereParqueadero}
+                GROUP BY DATE(f.fecha_emision)
+                ORDER BY fecha ASC
+            `, (err, porDia) => {
+                if (err) {
+                    console.error('Error obteniendo ganancias por día:', err);
+                    return res.json({ success: false, mensaje: 'Error obteniendo datos.' });
+                }
+
+                // Ganancias por parqueadero
+                db.query(`
+                    SELECT 
+                        COALESCE(p.nombre, 'Sin parqueadero') as nombre_parqueadero,
+                        SUM(f.valor_total) as total
+                    FROM FACTURA f
+                    INNER JOIN TICKET t ON f.id_ticket = t.id_ticket
+                    LEFT JOIN PARQUEADERO p ON t.id_parqueadero = p.id_parqueadero
+                    WHERE DATE(f.fecha_emision) >= ${fechaInicioSQL}
+                    AND DATE(f.fecha_emision) <= ${fechaFinSQL}
+                    ${whereParqueadero}
+                    GROUP BY t.id_parqueadero, p.nombre
+                    ORDER BY total DESC
+                `, (err, porParqueadero) => {
+                    if (err) {
+                        console.error('Error obteniendo ganancias por parqueadero:', err);
+                        return res.json({ success: false, mensaje: 'Error obteniendo datos.' });
+                    }
+
+                    // Ganancias por tipo de vehículo
+                    db.query(`
+                        SELECT 
+                            COALESCE(v.tipo_vehiculo, 'Desconocido') as tipo_vehiculo,
+                            SUM(f.valor_total) as total
+                        FROM FACTURA f
+                        INNER JOIN TICKET t ON f.id_ticket = t.id_ticket
+                        INNER JOIN VEHICULO v ON t.id_vehiculo = v.id_vehiculo
+                        WHERE DATE(f.fecha_emision) >= ${fechaInicioSQL}
+                        AND DATE(f.fecha_emision) <= ${fechaFinSQL}
+                        ${whereParqueadero}
+                        GROUP BY v.tipo_vehiculo
+                        ORDER BY total DESC
+                    `, (err, porTipoVehiculo) => {
+                        if (err) {
+                            console.error('Error obteniendo ganancias por tipo:', err);
+                            return res.json({ success: false, mensaje: 'Error obteniendo datos.' });
+                        }
+
+                        // Facturas detalladas
+                        db.query(`
+                            SELECT 
+                                f.id_factura,
+                                f.fecha_emision,
+                                f.valor_total,
+                                f.estado_factura,
+                                COALESCE(p.nombre, 'Sin parqueadero') as nombre_parqueadero,
+                                v.placa,
+                                v.tipo_vehiculo
+                            FROM FACTURA f
+                            INNER JOIN TICKET t ON f.id_ticket = t.id_ticket
+                            LEFT JOIN PARQUEADERO p ON t.id_parqueadero = p.id_parqueadero
+                            INNER JOIN VEHICULO v ON t.id_vehiculo = v.id_vehiculo
+                            WHERE DATE(f.fecha_emision) >= ${fechaInicioSQL}
+                            AND DATE(f.fecha_emision) <= ${fechaFinSQL}
+                            ${whereParqueadero}
+                            ORDER BY f.fecha_emision DESC, f.id_factura DESC
+                            LIMIT 100
+                        `, (err, facturas) => {
+                            if (err) {
+                                console.error('Error obteniendo facturas:', err);
+                                return res.json({ success: false, mensaje: 'Error obteniendo facturas.' });
+                            }
+
+                            // Formatear datos para gráficos
+                            const graficos = {
+                                porDia: {
+                                    labels: porDia.map(d => {
+                                        const fecha = new Date(d.fecha);
+                                        return fecha.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' });
+                                    }),
+                                    valores: porDia.map(d => parseFloat(d.total || 0))
+                                },
+                                porParqueadero: {
+                                    labels: porParqueadero.map(p => p.nombre_parqueadero),
+                                    valores: porParqueadero.map(p => parseFloat(p.total || 0))
+                                },
+                                porTipoVehiculo: {
+                                    labels: porTipoVehiculo.map(t => {
+                                        const tipos = {
+                                            'Automovil': 'Automóvil',
+                                            'Motocicleta': 'Motocicleta',
+                                            'Camion': 'Camión',
+                                            'Bicicleta': 'Bicicleta'
+                                        };
+                                        return tipos[t.tipo_vehiculo] || t.tipo_vehiculo;
+                                    }),
+                                    valores: porTipoVehiculo.map(t => parseFloat(t.total || 0))
+                                }
+                            };
+
+                            return res.json({
+                                success: true,
+                                resumen: {
+                                    total: total,
+                                    promedioDiario: promedioDiario,
+                                    totalFacturas: totalFacturas,
+                                    mejorDia: mejorDiaStr
+                                },
+                                graficos: graficos,
+                                facturas: facturas
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
+
+// OBTENER TICKETS
+app.get('/obtener-tickets', (req, res) => {
+    const { estado, idParqueadero, placa } = req.query;
+    
+    let whereConditions = [];
+    let params = [];
+    
+    if (estado) {
+        whereConditions.push('t.estado_ticket = ?');
+        params.push(estado);
+    }
+    
+    if (idParqueadero) {
+        whereConditions.push('t.id_parqueadero = ?');
+        params.push(idParqueadero);
+    }
+    
+    if (placa) {
+        whereConditions.push('v.placa LIKE ?');
+        params.push(`%${placa}%`);
+    }
+    
+    const whereClause = whereConditions.length > 0 
+        ? 'WHERE ' + whereConditions.join(' AND ')
+        : '';
+    
+    const query = `
+        SELECT 
+            t.id_ticket,
+            t.hora_entrada,
+            t.hora_salida,
+            t.monto_total,
+            t.estado_ticket,
+            v.placa,
+            v.tipo_vehiculo,
+            COALESCE(p.nombre, 'Sin parqueadero') as nombre_parqueadero
+        FROM TICKET t
+        INNER JOIN VEHICULO v ON t.id_vehiculo = v.id_vehiculo
+        LEFT JOIN PARQUEADERO p ON t.id_parqueadero = p.id_parqueadero
+        ${whereClause}
+        ORDER BY t.hora_entrada DESC
+        LIMIT 500
+    `;
+    
+    db.query(query, params, (err, result) => {
+        if (err) {
+            console.error('Error obteniendo tickets:', err);
+            return res.json({ success: false, mensaje: 'Error obteniendo tickets.' });
+        }
+        return res.json({ success: true, tickets: result });
+    });
 });
 
 app.listen(PORT, () =>{
