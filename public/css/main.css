@@ -588,6 +588,7 @@ input::placeholder, textarea::placeholder {
 .sidebar-admin ul li.active a {
     background: var(--color-botones-sec);
     color: white;
+    font-weight: 600;
 }
 .sidebar-admin .submenu {
     list-style: none;
@@ -605,12 +606,28 @@ input::placeholder, textarea::placeholder {
     display: block;
     color: var(--color-texto-claro);
     text-decoration: none;
-    transition: background 0.2s;
+    transition: background 0.2s, font-weight 0.2s;
+    position: relative;
 }
-.sidebar-admin .submenu li a:hover,
+.sidebar-admin .submenu li a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
 .sidebar-admin .submenu li.active a {
     background: var(--color-botones-sec);
     color: white;
+    font-weight: 600;
+}
+.sidebar-admin .submenu li.active a::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 60%;
+    background: white;
+    border-radius: 2px;
 }
 .panel-zona {
     flex: 1;
@@ -633,14 +650,28 @@ input::placeholder, textarea::placeholder {
     padding: 0 20px;
 }
 
-/* Asegurar que la sección de espacios ocupe todo el ancho */
-.layout-admin:has(#section-espacios.active) .panel-zona-inner {
+/* Asegurar que las secciones administrativas y de gestión usen todo el ancho */
+.layout-admin:has(#section-tarifas.active) .panel-zona-inner,
+.layout-admin:has(#section-proveedores.active) .panel-zona-inner,
+.layout-admin:has(#section-servicios-programados.active) .panel-zona-inner,
+.layout-admin:has(#section-config-parqueadero.active) .panel-zona-inner,
+.layout-admin:has(#section-espacios.active) .panel-zona-inner,
+.layout-admin:has(#section-facturacion-ganancias.active) .panel-zona-inner,
+.layout-admin:has(#section-tickets.active) .panel-zona-inner,
+.layout-admin:has(#section-vehiculos.active) .panel-zona-inner {
     max-width: 100% !important;
     padding: 0 30px;
     width: 100%;
 }
 
-.layout-admin:has(#section-espacios.active) .panel-zona {
+.layout-admin:has(#section-tarifas.active) .panel-zona,
+.layout-admin:has(#section-proveedores.active) .panel-zona,
+.layout-admin:has(#section-servicios-programados.active) .panel-zona,
+.layout-admin:has(#section-config-parqueadero.active) .panel-zona,
+.layout-admin:has(#section-espacios.active) .panel-zona,
+.layout-admin:has(#section-facturacion-ganancias.active) .panel-zona,
+.layout-admin:has(#section-tickets.active) .panel-zona,
+.layout-admin:has(#section-vehiculos.active) .panel-zona {
     width: 100%;
 }
 
@@ -692,6 +723,20 @@ input::placeholder, textarea::placeholder {
 .admin-card-box.full-width {
     max-width: 100%;
     width: 100%;
+    box-sizing: border-box;
+}
+
+/* Asegurar que los admin-card-box en secciones administrativas usen todo el ancho */
+#section-tarifas .admin-card-box,
+#section-proveedores .admin-card-box,
+#section-servicios-programados .admin-card-box,
+#section-config-parqueadero .admin-card-box,
+#section-vehiculos .admin-card-box,
+#section-facturacion-ganancias .admin-card-box,
+#section-tickets .admin-card-box {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 .admin-card-box h3 {
     font-size: 1.3rem;
@@ -745,9 +790,13 @@ input::placeholder, textarea::placeholder {
 }
 .section-content {
     display: none;
+    width: 100%;
+    max-width: 100%;
 }
 .section-content.active {
     display: block;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* ===========================================
@@ -897,8 +946,11 @@ input::placeholder, textarea::placeholder {
 
 .tabla-vehiculos {
     width: 100%;
+    max-width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    table-layout: auto;
+    display: table;
 }
 
 .tabla-vehiculos thead {
@@ -911,6 +963,21 @@ input::placeholder, textarea::placeholder {
     text-align: left;
     font-weight: 600;
     font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* Distribución de columnas para que usen todo el ancho */
+.tabla-vehiculos th:first-child,
+.tabla-vehiculos td:first-child {
+    width: auto;
+    min-width: 60px;
+}
+
+.tabla-vehiculos th:last-child,
+.tabla-vehiculos td:last-child {
+    width: auto;
+    min-width: 150px;
+    text-align: center;
 }
 
 .tabla-vehiculos tbody tr {
@@ -1142,11 +1209,31 @@ input::placeholder, textarea::placeholder {
 .config-parqueadero-container {
     width: 100%;
     max-width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.config-parqueadero-container .admin-card-box {
+    width: 100%;
+    max-width: 100%;
 }
 
 .lista-parqueaderos {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+}
+
+/* Asegurar que las tablas dentro de lista-parqueaderos usen todo el ancho */
+.lista-parqueaderos .tabla-vehiculos,
+.lista-parqueaderos table {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    table-layout: auto;
+    display: table;
 }
 
 .btn-accion {
@@ -1286,16 +1373,56 @@ input::placeholder, textarea::placeholder {
     
     .tabla-vehiculos {
         font-size: 0.8rem;
+        width: 100%;
+        max-width: 100%;
+        min-width: 100%;
+        display: table;
     }
     
     .tabla-vehiculos th,
     .tabla-vehiculos td {
         padding: 8px;
+        font-size: 0.75rem;
     }
     
-    /* Formulario de parqueadero en móvil */
-    .config-parqueadero-container .admin-card-box.full-width > form > div[style*="grid"] {
+    /* Asegurar que los contenedores de tablas usen todo el ancho en móvil */
+    .lista-parqueaderos,
+    #listaTarifas,
+    #listaProveedores,
+    #listaServicios,
+    #listaParqueaderos,
+    #vehiculosLista,
+    #tablaFacturas,
+    #tablaTickets {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Formularios en móvil - todas las secciones */
+    .config-parqueadero-container .admin-card-box.full-width > form > div[style*="grid"],
+    #section-tarifas form > div[style*="grid"],
+    #section-proveedores form > div[style*="grid"],
+    #section-servicios-programados form > div[style*="grid"],
+    #section-config-parqueadero form > div[style*="grid"] {
         grid-template-columns: 1fr !important;
+    }
+    
+    /* Asegurar que todas las secciones usen todo el ancho en móvil */
+    .panel-zona-inner {
+        max-width: 100% !important;
+        padding: 0 15px !important;
+    }
+    
+    .config-parqueadero-container,
+    .vehiculos-container,
+    .espacios-container,
+    .facturacion-container,
+    .tickets-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
     }
     
     /* Estadísticas de espacios en móvil */
@@ -1310,6 +1437,64 @@ input::placeholder, textarea::placeholder {
     .estadistica-resumen {
         grid-template-columns: 1fr;
     }
+}
+
+/* Media queries para tablets (pantallas medianas) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .panel-zona-inner {
+        padding: 0 25px;
+    }
+    
+    /* Formularios en 2 columnas en tablets */
+    #section-tarifas form > div[style*="grid"],
+    #section-proveedores form > div[style*="grid"],
+    #section-servicios-programados form > div[style*="grid"],
+    #section-config-parqueadero form > div[style*="grid"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Asegurar que todas las tablas usen todo el ancho disponible */
+.tabla-vehiculos,
+#section-tarifas table,
+#section-proveedores table,
+#section-servicios-programados table,
+#section-config-parqueadero table,
+#section-vehiculos table,
+#section-facturacion-ganancias table,
+#section-tickets table,
+.admin-card-box table,
+.config-parqueadero-container table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: auto;
+    box-sizing: border-box;
+}
+
+/* Contenedores de tablas deben usar todo el ancho */
+.lista-parqueaderos,
+#listaTarifas,
+#listaProveedores,
+#listaServicios,
+#listaParqueaderos,
+#vehiculosLista,
+#tablaFacturas,
+#tablaTickets,
+.vehiculos-lista {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+}
+
+/* Asegurar que los admin-card-box que contienen tablas usen todo el ancho */
+.admin-card-box:has(table),
+.admin-card-box:has(.tabla-vehiculos),
+.admin-card-box:has(.lista-parqueaderos) {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* ===========================================

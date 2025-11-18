@@ -25,6 +25,8 @@
                 <ul class="submenu" style="display: none;">
                     <li class="submenu-item active" data-section="config-parqueadero"><a href="#">Configuración Parqueadero</a></li>
                     <li class="submenu-item" data-section="tarifas"><a href="#">Tarifas</a></li>
+                    <li class="submenu-item" data-section="proveedores"><a href="#">Proveedores</a></li>
+                    <li class="submenu-item" data-section="servicios-programados"><a href="#">Servicios Programados</a></li>
                 </ul>
             </li>
             <li><a href="/">Cerrar Sesión</a></li>
@@ -78,7 +80,8 @@
                   <h3>Ingreso</h3>
                   <form id="formIngreso">
                       <label class="field-label" for="ingresoPlaca">Placa</label>
-                      <input class="input-admin" type="text" id="ingresoPlaca" name="placa" placeholder="Ej: ABC123" maxlength="10" required disabled>
+                      <input class="input-admin" type="text" id="ingresoPlaca" name="placa" placeholder="Ej: ABC123" maxlength="20" required disabled>
+                      <small id="hintPlaca" style="display: block; margin-top: 5px; color: #666; font-size: 0.85rem;"></small>
 
                       <label class="field-label" for="ingresoTipo">Tipo de Vehículo</label>
                       <select class="input-admin" id="ingresoTipo" name="tipo_vehiculo" required disabled>
@@ -95,8 +98,21 @@
               <div class="admin-card-box formulario-box" id="cardSalida" style="opacity: 0.5; pointer-events: none;">
                   <h3>Salida</h3>
                   <form id="formSalida">
-                      <label class="field-label" for="salidaPlaca">Placa</label>
-                      <input class="input-admin" type="text" id="salidaPlaca" name="placa" placeholder="Ej: ABC123" maxlength="10" required disabled>
+                      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                          <button type="button" id="btnBuscarPorPlaca" class="admin-btn" style="flex: 1; background: var(--color-botones-sec);" disabled>Por Placa</button>
+                          <button type="button" id="btnBuscarPorTicket" class="admin-btn" style="flex: 1; background: var(--color-fondo-claro); color: var(--color-principal);" disabled>Por Ticket</button>
+                      </div>
+                      
+                      <div id="campoPlacaSalida" style="display: block;">
+                          <label class="field-label" for="salidaPlaca">Placa</label>
+                          <input class="input-admin" type="text" id="salidaPlaca" name="placa" placeholder="Ej: ABC123" maxlength="20" disabled>
+                      </div>
+                      
+                      <div id="campoTicketSalida" style="display: none;">
+                          <label class="field-label" for="salidaTicket">Número de Ticket</label>
+                          <input class="input-admin" type="text" id="salidaTicket" name="ticket" placeholder="Ej: 123" maxlength="10" disabled>
+                      </div>
+                      
                       <button class="admin-btn" type="submit" disabled>Generar factura salida</button>
                       <div class="info-salida" id="msgSalida"></div>
                   </form>
@@ -315,6 +331,149 @@
           </div>
         </div>
 
+        <!-- SECCIÓN PROVEEDORES -->
+        <div id="section-proveedores" class="section-content" style="display: none;">
+          <div class="config-parqueadero-container">
+            <!-- FORMULARIO DE REGISTRO/MODIFICACIÓN -->
+            <div class="admin-card-box full-width">
+              <h3 id="tituloFormProveedor">Registro de Proveedor</h3>
+              <form id="formProveedor">
+                <input type="hidden" id="idProveedorEdit" name="idEdit">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                  <div>
+                    <label class="field-label" for="nombreProveedor">Nombre del Proveedor *</label>
+                    <input class="input-admin" type="text" id="nombreProveedor" name="nombre_proveedor" placeholder="Ej: Mantenimiento ABC" required>
+                  </div>
+
+                  <div>
+                    <label class="field-label" for="tipoServicioProveedor">Tipo de Servicio</label>
+                    <input class="input-admin" type="text" id="tipoServicioProveedor" name="tipo_servicio" placeholder="Ej: Mantenimiento, Limpieza, Seguridad">
+                  </div>
+
+                  <div>
+                    <label class="field-label" for="telefonoProveedor">Teléfono</label>
+                    <input class="input-admin" type="text" id="telefonoProveedor" name="telefono" placeholder="Ej: 3001234567">
+                  </div>
+
+                  <div>
+                    <label class="field-label" for="emailProveedor">Email</label>
+                    <input class="input-admin" type="email" id="emailProveedor" name="email" placeholder="Ej: proveedor@ejemplo.com">
+                  </div>
+
+                  <div>
+                    <label class="field-label" for="parqueaderoProveedor">Parqueadero *</label>
+                    <select class="input-admin" id="parqueaderoProveedor" name="id_parqueadero" required>
+                      <option value="">-- Seleccione un parqueadero --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                  <button class="admin-btn" type="submit" id="btnGuardarProveedor">Registrar Proveedor</button>
+                  <button class="admin-btn" type="button" id="btnCancelarEdicionProveedor" style="background: var(--color-botones-sec); display: none;">Cancelar</button>
+                </div>
+                <div class="info-registro" id="msgProveedor"></div>
+              </form>
+            </div>
+
+            <!-- LISTA DE PROVEEDORES -->
+            <div class="admin-card-box full-width" style="margin-top: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Proveedores Registrados</h3>
+                <button class="admin-btn" id="btnActualizarProveedores" style="width: auto; padding: 10px 20px; margin: 0;">🔄 Actualizar</button>
+              </div>
+              <div id="listaProveedores" class="lista-parqueaderos">
+                <div class="loading-vehiculos">Cargando proveedores...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN SERVICIOS PROGRAMADOS -->
+        <div id="section-servicios-programados" class="section-content" style="display: none;">
+          <div class="config-parqueadero-container">
+            <!-- FORMULARIO DE REGISTRO/MODIFICACIÓN -->
+            <div class="admin-card-box full-width">
+              <h3 id="tituloFormServicio">Registro de Servicio Programado</h3>
+              <form id="formServicio">
+                <input type="hidden" id="idServicioEdit" name="idEdit">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                  <div>
+                    <label class="field-label" for="proveedorServicio">Proveedor *</label>
+                    <select class="input-admin" id="proveedorServicio" name="id_proveedor" required>
+                      <option value="">-- Seleccione un proveedor --</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="field-label" for="fechaProgramada">Fecha Programada *</label>
+                    <input class="input-admin" type="date" id="fechaProgramada" name="fecha_programada" required>
+                  </div>
+
+                  <div>
+                    <label class="field-label" for="horaProgramada">Hora Programada *</label>
+                    <input class="input-admin" type="time" id="horaProgramada" name="hora_programada" required>
+                  </div>
+
+                  <div>
+                    <label class="field-label" for="estadoServicio">Estado</label>
+                    <select class="input-admin" id="estadoServicio" name="estado">
+                      <option value="Programado">Programado</option>
+                      <option value="En Proceso">En Proceso</option>
+                      <option value="Completado">Completado</option>
+                      <option value="Cancelado">Cancelado</option>
+                    </select>
+                  </div>
+
+                  <div style="grid-column: 1 / -1;">
+                    <label class="field-label" for="descripcionServicio">Descripción del Servicio *</label>
+                    <textarea class="input-admin" id="descripcionServicio" name="descripcion_servicio" rows="3" placeholder="Describa el servicio a realizar..." required></textarea>
+                  </div>
+
+                  <div style="grid-column: 1 / -1;">
+                    <label class="field-label" for="observacionesServicio">Observaciones</label>
+                    <textarea class="input-admin" id="observacionesServicio" name="observaciones" rows="2" placeholder="Observaciones adicionales..."></textarea>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                  <button class="admin-btn" type="submit" id="btnGuardarServicio">Registrar Servicio</button>
+                  <button class="admin-btn" type="button" id="btnCancelarEdicionServicio" style="background: var(--color-botones-sec); display: none;">Cancelar</button>
+                </div>
+                <div class="info-registro" id="msgServicio"></div>
+              </form>
+            </div>
+
+            <!-- FILTROS Y LISTA DE SERVICIOS -->
+            <div class="admin-card-box full-width" style="margin-top: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <h3>Servicios Programados</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <select class="input-admin" id="filtroEstadoServicio" style="width: auto; min-width: 150px;">
+                    <option value="">Todos los estados</option>
+                    <option value="Programado">Programado</option>
+                    <option value="En Proceso">En Proceso</option>
+                    <option value="Completado">Completado</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </select>
+                  <select class="input-admin" id="filtroProveedorServicio" style="width: auto; min-width: 200px;">
+                    <option value="">Todos los proveedores</option>
+                  </select>
+                  <input class="input-admin" type="date" id="filtroFechaInicio" style="width: auto;">
+                  <input class="input-admin" type="date" id="filtroFechaFin" style="width: auto;">
+                  <button class="admin-btn" id="btnFiltrarServicios" style="width: auto; padding: 10px 20px; margin: 0;">🔍 Filtrar</button>
+                  <button class="admin-btn" id="btnActualizarServicios" style="width: auto; padding: 10px 20px; margin: 0;">🔄 Actualizar</button>
+                </div>
+              </div>
+              <div id="listaServicios" class="lista-parqueaderos">
+                <div class="loading-vehiculos">Cargando servicios programados...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- SECCIÓN CONFIGURACIÓN PARQUEADERO -->
         <div id="section-config-parqueadero" class="section-content" style="display: none;">
           <div class="config-parqueadero-container">
@@ -390,6 +549,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const submenuItems = document.querySelectorAll('.submenu-item');
     const sections = document.querySelectorAll('.section-content');
     const allSubmenus = document.querySelectorAll('.submenu');
+    
+    // Mantener abiertos los submenús que tienen items activos al cargar la página
+    allSubmenus.forEach(submenu => {
+        const hasActiveItem = submenu.querySelector('.submenu-item.active');
+        if (hasActiveItem) {
+            submenu.style.display = 'block';
+            // Asegurar que el menú principal padre también esté activo
+            const parentMenuItem = submenu.closest('.menu-item');
+            if (parentMenuItem) {
+                parentMenuItem.classList.add('active');
+            }
+        }
+    });
 
     // Manejo de clic en items del menú principal
     menuItems.forEach(item => {
@@ -401,14 +573,27 @@ document.addEventListener('DOMContentLoaded', function () {
             const currentSubmenu = this.querySelector('.submenu');
             
             if (sectionName === 'administracion' || sectionName === 'facturacion') {
-                // Toggle del submenú específico
+                // Si tiene submenú, mantenerlo abierto y no hacer toggle
                 if (currentSubmenu) {
-                    const isHidden = currentSubmenu.style.display === 'none' || currentSubmenu.style.display === '';
-                    if (isHidden) {
-                        currentSubmenu.style.display = 'block';
-                        // Si se está abriendo, mostrar la primera subopción por defecto
+                    // Cerrar otros submenús pero mantener este abierto
+                    allSubmenus.forEach(sub => {
+                        if (sub && sub !== currentSubmenu) {
+                            sub.style.display = 'none';
+                        }
+                    });
+                    
+                    // Asegurar que este submenú esté visible
+                    currentSubmenu.style.display = 'block';
+                    
+                    // Actualizar clases activas del menú principal
+                    menuItems.forEach(mi => mi.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Si no hay ningún subitem activo, activar el primero
+                    const activeSubItem = currentSubmenu.querySelector('.submenu-item.active');
+                    if (!activeSubItem) {
                         const firstSubItem = currentSubmenu.querySelector('.submenu-item');
-                        if (firstSubItem && isHidden) {
+                        if (firstSubItem) {
                             const firstSectionName = firstSubItem.getAttribute('data-section');
                             // Ocultar todas las secciones
                             sections.forEach(sec => {
@@ -432,11 +617,15 @@ document.addEventListener('DOMContentLoaded', function () {
                                     cargarListaParqueaderos();
                                 } else if (firstSectionName === 'tarifas') {
                                     cargarListaTarifas();
+                                } else if (firstSectionName === 'proveedores') {
+                                    cargarParqueaderosParaProveedores();
+                                    cargarListaProveedores();
+                                } else if (firstSectionName === 'servicios-programados') {
+                                    cargarProveedoresParaServicios();
+                                    cargarListaServicios();
                                 }
                             }
                         }
-                    } else {
-                        currentSubmenu.style.display = 'none';
                     }
                 }
                 return;
@@ -490,9 +679,24 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             const sectionName = this.getAttribute('data-section');
             
-            // Actualizar clases activas
-            submenuItems.forEach(smi => smi.classList.remove('active'));
+            // Encontrar el submenú padre y mantenerlo abierto
+            const parentSubmenu = this.closest('.submenu');
+            if (parentSubmenu) {
+                parentSubmenu.style.display = 'block';
+            }
+            
+            // Actualizar clases activas del submenú
+            // Solo remover active de items del mismo submenú
+            const sameSubmenuItems = parentSubmenu ? parentSubmenu.querySelectorAll('.submenu-item') : submenuItems;
+            sameSubmenuItems.forEach(smi => smi.classList.remove('active'));
             this.classList.add('active');
+            
+            // Asegurar que el menú principal padre también esté activo
+            const parentMenuItem = this.closest('.menu-item');
+            if (parentMenuItem) {
+                menuItems.forEach(mi => mi.classList.remove('active'));
+                parentMenuItem.classList.add('active');
+            }
 
             // Mostrar sección correspondiente
             sections.forEach(sec => {
@@ -518,6 +722,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Si es la sección de tarifas, cargar lista
                 if (sectionName === 'tarifas') {
                     cargarListaTarifas();
+                }
+                // Si es la sección de proveedores, cargar datos
+                if (sectionName === 'proveedores') {
+                    cargarParqueaderosParaProveedores();
+                    cargarListaProveedores();
+                }
+                // Si es la sección de servicios programados, cargar datos
+                if (sectionName === 'servicios-programados') {
+                    cargarProveedoresParaServicios();
+                    cargarListaServicios();
                 }
                 // Si es la sección de facturación y ganancias, cargar datos
                 if (sectionName === 'facturacion-ganancias') {
@@ -684,9 +898,148 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+    // ---------- Validación de placas ----------
+    function validarFormatoPlaca(placa, tipoVehiculo) {
+        const placaUpper = placa.trim().toUpperCase();
+        
+        if (tipoVehiculo === 'Bicicleta') {
+            // Detectar si la placa ingresada coincide con formato de automóvil/camión (3 letras + 3 números)
+            const regexAutoCamion = /^[A-Z]{3}[0-9]{3}$/;
+            if (regexAutoCamion.test(placaUpper)) {
+                return { 
+                    valido: false, 
+                    mensaje: `La placa "${placaUpper}" coincide con el formato de Automóvil/Camión (3 letras + 3 números). ¿Desea cambiar el tipo de vehículo a Automóvil?`,
+                    sugerenciaCambioTipo: 'Automovil'
+                };
+            }
+            
+            // Detectar si la placa ingresada coincide con formato de motocicleta (3 letras + 2 números + 1 letra)
+            const regexMoto = /^[A-Z]{3}[0-9]{2}[A-Z]{1}$/;
+            if (regexMoto.test(placaUpper)) {
+                return { 
+                    valido: false, 
+                    mensaje: `La placa "${placaUpper}" coincide con el formato de Motocicleta (3 letras + 2 números + 1 letra). ¿Desea cambiar el tipo de vehículo a Motocicleta?`,
+                    sugerenciaCambioTipo: 'Motocicleta'
+                };
+            }
+            
+            // Para bicicleta, no hay requisito mínimo de caracteres, acepta cualquier texto
+            return { valido: true, placa: placaUpper };
+        }
+        
+        if (tipoVehiculo === 'Automovil' || tipoVehiculo === 'Camion') {
+            // Formato: 3 letras + 3 números (ABC123)
+            const regex = /^[A-Z]{3}[0-9]{3}$/;
+            if (regex.test(placaUpper)) {
+                return { valido: true, placa: placaUpper };
+            }
+            // Sugerir corrección
+            const letras = placaUpper.replace(/[^A-Z]/g, '').substring(0, 3).padEnd(3, 'X');
+            const numeros = placaUpper.replace(/[^0-9]/g, '').substring(0, 3).padEnd(3, '0');
+            const sugerencia = letras + numeros;
+            return { 
+                valido: false, 
+                mensaje: `Formato incorrecto. Debe ser 3 letras + 3 números (ej: ABC123). ¿Desea usar: ${sugerencia}?`,
+                sugerencia: sugerencia
+            };
+        }
+        
+        if (tipoVehiculo === 'Motocicleta') {
+            // Formato: 3 letras + 2 números + 1 letra (ABC12D)
+            const regex = /^[A-Z]{3}[0-9]{2}[A-Z]{1}$/;
+            if (regex.test(placaUpper)) {
+                return { valido: true, placa: placaUpper };
+            }
+            // Sugerir corrección
+            const letras = placaUpper.replace(/[^A-Z]/g, '');
+            const numeros = placaUpper.replace(/[^0-9]/g, '');
+            let sugerencia = letras.substring(0, 3).padEnd(3, 'X');
+            sugerencia += numeros.substring(0, 2).padEnd(2, '0');
+            sugerencia += letras.length > 3 ? letras[3] : (letras.length > 0 ? letras[0] : 'A');
+            return { 
+                valido: false, 
+                mensaje: `Formato incorrecto. Debe ser 3 letras + 2 números + 1 letra (ej: ABC12D). ¿Desea usar: ${sugerencia}?`,
+                sugerencia: sugerencia
+            };
+        }
+        
+        return { valido: true, placa: placaUpper };
+    }
+
     // ---------- Ingreso ----------
     const formIngreso = document.getElementById('formIngreso');
     const msgIngreso = document.getElementById('msgIngreso');
+    const inputPlacaIngreso = document.getElementById('ingresoPlaca');
+    const selectTipoIngreso = document.getElementById('ingresoTipo');
+
+    // Actualizar placeholder y hint según tipo de vehículo
+    selectTipoIngreso.addEventListener('change', function() {
+        const tipoVehiculo = this.value;
+        const hintPlaca = document.getElementById('hintPlaca');
+        
+        if (tipoVehiculo === 'Automovil' || tipoVehiculo === 'Camion') {
+            inputPlacaIngreso.placeholder = 'Ej: ABC123';
+            inputPlacaIngreso.maxLength = 6;
+            hintPlaca.textContent = 'Formato: 3 letras + 3 números (ej: ABC123)';
+        } else if (tipoVehiculo === 'Motocicleta') {
+            inputPlacaIngreso.placeholder = 'Ej: ABC12D';
+            inputPlacaIngreso.maxLength = 6;
+            hintPlaca.textContent = 'Formato: 3 letras + 2 números + 1 letra (ej: ABC12D)';
+        } else if (tipoVehiculo === 'Bicicleta') {
+            inputPlacaIngreso.placeholder = 'Ej: BICICLETA001';
+            inputPlacaIngreso.maxLength = 50;
+            hintPlaca.textContent = 'Cualquier texto (sin formato específico)';
+            // Autocompletar con "Bicicleta " si el campo está vacío o no empieza con "Bicicleta"
+            const valorActual = inputPlacaIngreso.value.trim();
+            if (!valorActual || (!valorActual.toUpperCase().startsWith('BICICLETA'))) {
+                inputPlacaIngreso.value = 'Bicicleta ';
+                // Colocar el cursor al final
+                setTimeout(() => {
+                    inputPlacaIngreso.focus();
+                    inputPlacaIngreso.setSelectionRange(inputPlacaIngreso.value.length, inputPlacaIngreso.value.length);
+                }, 10);
+            }
+        } else {
+            hintPlaca.textContent = '';
+        }
+    });
+
+    // Validación en tiempo real de la placa
+    inputPlacaIngreso.addEventListener('blur', function() {
+        const tipoVehiculo = selectTipoIngreso.value;
+        const placa = this.value.trim();
+        
+        if (placa && tipoVehiculo) {
+            const validacion = validarFormatoPlaca(placa, tipoVehiculo);
+            if (!validacion.valido) {
+                msgIngreso.textContent = validacion.mensaje;
+                msgIngreso.style.color = '#ffa500';
+                
+                // Si hay sugerencia de cambio de tipo de vehículo
+                if (validacion.sugerenciaCambioTipo) {
+                    const cambiarTipo = confirm(validacion.mensaje);
+                    if (cambiarTipo) {
+                        selectTipoIngreso.value = validacion.sugerenciaCambioTipo;
+                        // Disparar el evento change para actualizar el placeholder y hint
+                        selectTipoIngreso.dispatchEvent(new Event('change'));
+                        msgIngreso.textContent = '';
+                        msgIngreso.style.color = '';
+                    }
+                } else if (validacion.sugerencia) {
+                    // Si hay sugerencia de corrección de formato
+                    const usarSugerencia = confirm(validacion.mensaje);
+                    if (usarSugerencia) {
+                        this.value = validacion.sugerencia;
+                        msgIngreso.textContent = '';
+                        msgIngreso.style.color = '';
+                    }
+                }
+            } else {
+                msgIngreso.textContent = '';
+                msgIngreso.style.color = '';
+            }
+        }
+    });
 
     formIngreso.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -697,12 +1050,43 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const tipoVehiculo = formIngreso.tipo_vehiculo.value;
+        const placa = formIngreso.placa.value.trim();
+        
+        // Validar formato de placa
+        const validacion = validarFormatoPlaca(placa, tipoVehiculo);
+        if (!validacion.valido) {
+            msgIngreso.textContent = validacion.mensaje;
+            msgIngreso.style.color = '#e76f51';
+            
+            // Si hay sugerencia de cambio de tipo de vehículo
+            if (validacion.sugerenciaCambioTipo) {
+                const cambiarTipo = confirm(validacion.mensaje);
+                if (cambiarTipo) {
+                    selectTipoIngreso.value = validacion.sugerenciaCambioTipo;
+                    // Disparar el evento change para actualizar el placeholder y hint
+                    selectTipoIngreso.dispatchEvent(new Event('change'));
+                    // Reintentar envío con el tipo corregido
+                    setTimeout(() => formIngreso.dispatchEvent(new Event('submit')), 100);
+                }
+            } else if (validacion.sugerencia) {
+                // Si hay sugerencia de corrección de formato
+                const usarSugerencia = confirm(validacion.mensaje);
+                if (usarSugerencia) {
+                    inputPlacaIngreso.value = validacion.sugerencia;
+                    // Reintentar envío con la placa corregida
+                    setTimeout(() => formIngreso.dispatchEvent(new Event('submit')), 100);
+                }
+            }
+            return;
+        }
+
         msgIngreso.textContent = 'Procesando ingreso...';
         msgIngreso.style.color = '';
 
         const datos = {
-            placa: formIngreso.placa.value.trim().toUpperCase(),
-            tipo_vehiculo: formIngreso.tipo_vehiculo.value,
+            placa: validacion.placa,
+            tipo_vehiculo: tipoVehiculo,
             id_parqueadero: parseInt(idParqueadero)
         };
 
@@ -735,6 +1119,50 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---------- Salida ----------
     const formSalida = document.getElementById('formSalida');
     const msgSalida = document.getElementById('msgSalida');
+    const inputSalidaPlaca = document.getElementById('salidaPlaca');
+    const inputSalidaTicket = document.getElementById('salidaTicket');
+    const btnBuscarPorPlaca = document.getElementById('btnBuscarPorPlaca');
+    const btnBuscarPorTicket = document.getElementById('btnBuscarPorTicket');
+    const campoPlacaSalida = document.getElementById('campoPlacaSalida');
+    const campoTicketSalida = document.getElementById('campoTicketSalida');
+    
+    let modoBusquedaSalida = 'placa'; // 'placa' o 'ticket'
+    
+    // Asegurar que el modo inicial esté correcto
+    if (campoPlacaSalida && campoTicketSalida) {
+        if (campoPlacaSalida.style.display !== 'none') {
+            modoBusquedaSalida = 'placa';
+        } else if (campoTicketSalida.style.display !== 'none') {
+            modoBusquedaSalida = 'ticket';
+        }
+    }
+
+    // Intercambiador de modo de búsqueda
+    btnBuscarPorPlaca.addEventListener('click', function() {
+        modoBusquedaSalida = 'placa';
+        campoPlacaSalida.style.display = 'block';
+        campoTicketSalida.style.display = 'none';
+        inputSalidaPlaca.value = '';
+        inputSalidaTicket.value = '';
+        btnBuscarPorPlaca.style.background = 'var(--color-botones-sec)';
+        btnBuscarPorPlaca.style.color = 'white';
+        btnBuscarPorTicket.style.background = 'var(--color-fondo-claro)';
+        btnBuscarPorTicket.style.color = 'var(--color-principal)';
+        msgSalida.textContent = '';
+    });
+
+    btnBuscarPorTicket.addEventListener('click', function() {
+        modoBusquedaSalida = 'ticket';
+        campoPlacaSalida.style.display = 'none';
+        campoTicketSalida.style.display = 'block';
+        inputSalidaPlaca.value = '';
+        inputSalidaTicket.value = '';
+        btnBuscarPorTicket.style.background = 'var(--color-botones-sec)';
+        btnBuscarPorTicket.style.color = 'white';
+        btnBuscarPorPlaca.style.background = 'var(--color-fondo-claro)';
+        btnBuscarPorPlaca.style.color = 'var(--color-principal)';
+        msgSalida.textContent = '';
+    });
 
     formSalida.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -745,13 +1173,40 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        msgSalida.textContent = 'Procesando salida...';
-        msgSalida.style.color = '';
+        // Determinar el modo actual basado en qué campo está visible
+        const modoActual = campoPlacaSalida.style.display !== 'none' ? 'placa' : 'ticket';
 
-        const datos = {
-            placa: formSalida.placa.value.trim().toUpperCase(),
+        let datos = {
             id_parqueadero: parseInt(idParqueadero)
         };
+
+        // Validar según el modo de búsqueda actual
+        if (modoActual === 'ticket') {
+            let numeroTicket = inputSalidaTicket.value.trim();
+            // Remover el símbolo # si está presente
+            numeroTicket = numeroTicket.replace(/^#/, '');
+            if (!numeroTicket || isNaN(numeroTicket) || parseInt(numeroTicket) <= 0) {
+                msgSalida.textContent = 'Debe ingresar un número de ticket válido.';
+                msgSalida.style.color = '#e76f51';
+                return;
+            }
+            datos.id_ticket = parseInt(numeroTicket);
+            // Asegurar que no se envíe placa cuando se busca por ticket
+            delete datos.placa;
+        } else {
+            const placa = inputSalidaPlaca.value.trim();
+            if (!placa) {
+                msgSalida.textContent = 'Debe ingresar la placa del vehículo.';
+                msgSalida.style.color = '#e76f51';
+                return;
+            }
+            datos.placa = placa.toUpperCase();
+            // Asegurar que no se envíe id_ticket cuando se busca por placa
+            delete datos.id_ticket;
+        }
+
+        msgSalida.textContent = 'Procesando salida...';
+        msgSalida.style.color = '';
 
         fetch('/salida-vehiculo', {
             method: 'POST',
@@ -763,7 +1218,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (respuesta.success) {
                 msgSalida.innerHTML = `<b>Factura generada</b>:<br>Valor a pagar: <span style='color:#3d5a80;font-size:1.3em'>${respuesta.valor_pagar}</span> <br>${respuesta.mensaje || ''}<br><a href="${respuesta.facturaUrl}" target="_blank" class="link-action" onclick="limpiarMensajeSalida()">🧾 Ver Factura</a>`;
                 msgSalida.style.color = '#56b881';
-                formSalida.reset();
+                // Limpiar campos según el modo actual
+                if (modoBusquedaSalida === 'ticket') {
+                    inputSalidaTicket.value = '';
+                } else {
+                    inputSalidaPlaca.value = '';
+                }
                 // Actualizar estadísticas después de la salida
                 actualizarEstadisticas(idParqueadero);
             } else {
@@ -1333,6 +1793,467 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnActualizarTarifas) {
         btnActualizarTarifas.addEventListener('click', function() {
             cargarListaTarifas();
+        });
+    }
+
+    // ---------- GESTIÓN DE PROVEEDORES ----------
+    const formProveedor = document.getElementById('formProveedor');
+    const msgProveedor = document.getElementById('msgProveedor');
+    const btnGuardarProveedor = document.getElementById('btnGuardarProveedor');
+    const tituloFormProveedor = document.getElementById('tituloFormProveedor');
+    const btnCancelarEdicionProveedor = document.getElementById('btnCancelarEdicionProveedor');
+
+    function resetearFormularioProveedor() {
+        formProveedor.reset();
+        document.getElementById('idProveedorEdit').value = '';
+        btnGuardarProveedor.textContent = 'Registrar Proveedor';
+        tituloFormProveedor.textContent = 'Registro de Proveedor';
+        btnCancelarEdicionProveedor.style.display = 'none';
+    }
+
+    function cargarDatosEnFormularioProveedor(proveedor) {
+        document.getElementById('idProveedorEdit').value = proveedor.id_proveedor;
+        document.getElementById('nombreProveedor').value = proveedor.nombre_proveedor || '';
+        document.getElementById('tipoServicioProveedor').value = proveedor.tipo_servicio || '';
+        document.getElementById('telefonoProveedor').value = proveedor.telefono || '';
+        document.getElementById('emailProveedor').value = proveedor.email || '';
+        document.getElementById('parqueaderoProveedor').value = proveedor.id_parqueadero || '';
+        btnGuardarProveedor.textContent = 'Modificar Proveedor';
+        tituloFormProveedor.textContent = 'Modificar Proveedor';
+        btnCancelarEdicionProveedor.style.display = 'inline-block';
+    }
+
+    function cargarParqueaderosParaProveedores() {
+        const selectParqueadero = document.getElementById('parqueaderoProveedor');
+        fetch('/obtener-parqueaderos-activos')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const currentValue = selectParqueadero.value;
+                    selectParqueadero.innerHTML = '<option value="">-- Seleccione un parqueadero --</option>';
+                    data.parqueaderos.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p.id_parqueadero;
+                        option.textContent = p.nombre;
+                        selectParqueadero.appendChild(option);
+                    });
+                    if (currentValue) {
+                        selectParqueadero.value = currentValue;
+                    }
+                }
+            })
+            .catch(err => console.error('Error cargando parqueaderos:', err));
+    }
+
+    btnCancelarEdicionProveedor.addEventListener('click', function() {
+        resetearFormularioProveedor();
+    });
+
+    formProveedor.addEventListener('submit', function (e) {
+        e.preventDefault();
+        msgProveedor.textContent = 'Procesando...';
+        msgProveedor.style.color = '';
+
+        const idEdit = document.getElementById('idProveedorEdit').value;
+        const datos = {
+            nombre_proveedor: document.getElementById('nombreProveedor').value.trim(),
+            tipo_servicio: document.getElementById('tipoServicioProveedor').value.trim() || null,
+            telefono: document.getElementById('telefonoProveedor').value.trim() || null,
+            email: document.getElementById('emailProveedor').value.trim() || null,
+            id_parqueadero: parseInt(document.getElementById('parqueaderoProveedor').value),
+            idEdit: idEdit || null
+        };
+
+        fetch('/registrar-proveedor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        })
+        .then(res => res.json())
+        .then(respuesta => {
+            if (respuesta.success) {
+                msgProveedor.textContent = respuesta.mensaje || 'Operación realizada correctamente.';
+                msgProveedor.style.color = '#56b881';
+                resetearFormularioProveedor();
+                cargarListaProveedores();
+                setTimeout(() => {
+                    msgProveedor.textContent = '';
+                    msgProveedor.style.color = '';
+                }, 3000);
+            } else {
+                msgProveedor.textContent = respuesta.mensaje || 'Error en la operación.';
+                msgProveedor.style.color = '#e76f51';
+            }
+        })
+        .catch(() => {
+            msgProveedor.textContent = 'Error de red o servidor.';
+            msgProveedor.style.color = '#e76f51';
+        });
+    });
+
+    function cargarListaProveedores() {
+        const listaProveedores = document.getElementById('listaProveedores');
+        listaProveedores.innerHTML = '<div class="loading-vehiculos">Cargando proveedores...</div>';
+
+        fetch('/obtener-proveedores')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarListaProveedores(data.proveedores);
+                } else {
+                    listaProveedores.innerHTML = '<div class="no-vehiculos">No se pudieron cargar los proveedores.</div>';
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando proveedores:', err);
+                listaProveedores.innerHTML = '<div class="no-vehiculos">Error al cargar los proveedores.</div>';
+            });
+    }
+
+    function mostrarListaProveedores(proveedores) {
+        const listaProveedores = document.getElementById('listaProveedores');
+        
+        if (proveedores.length === 0) {
+            listaProveedores.innerHTML = '<div class="no-vehiculos">No hay proveedores registrados.</div>';
+            return;
+        }
+
+        listaProveedores.innerHTML = `
+            <table class="tabla-vehiculos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Tipo de Servicio</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Parqueadero</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${proveedores.map(p => `
+                        <tr>
+                            <td><strong>${p.id_proveedor}</strong></td>
+                            <td>${p.nombre_proveedor || '-'}</td>
+                            <td>${p.tipo_servicio || '-'}</td>
+                            <td>${p.telefono || '-'}</td>
+                            <td>${p.email || '-'}</td>
+                            <td>${p.nombre_parqueadero || '-'}</td>
+                            <td>
+                                <button class="btn-accion btn-editar" onclick="editarProveedor(${p.id_proveedor})">✏️ Editar</button>
+                                <button class="btn-accion btn-inhabilitar" onclick="eliminarProveedor(${p.id_proveedor})">🗑️ Eliminar</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    window.editarProveedor = function(id) {
+        fetch(`/obtener-proveedor/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    cargarDatosEnFormularioProveedor(data.proveedor);
+                    document.getElementById('formProveedor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando proveedor:', err);
+                alert('Error al cargar los datos del proveedor.');
+            });
+    };
+
+    window.eliminarProveedor = function(id) {
+        if (!confirm('¿Está seguro de eliminar este proveedor? Esta acción no se puede deshacer.')) {
+            return;
+        }
+        fetch('/eliminar-proveedor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_proveedor: id })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                cargarListaProveedores();
+                alert(data.mensaje || 'Proveedor eliminado correctamente.');
+            } else {
+                alert(data.mensaje || 'Error al eliminar el proveedor.');
+            }
+        })
+        .catch(err => {
+            console.error('Error eliminando proveedor:', err);
+            alert('Error al eliminar el proveedor.');
+        });
+    };
+
+    const btnActualizarProveedores = document.getElementById('btnActualizarProveedores');
+    if (btnActualizarProveedores) {
+        btnActualizarProveedores.addEventListener('click', function() {
+            cargarListaProveedores();
+        });
+    }
+
+    // ---------- GESTIÓN DE SERVICIOS PROGRAMADOS ----------
+    const formServicio = document.getElementById('formServicio');
+    const msgServicio = document.getElementById('msgServicio');
+    const btnGuardarServicio = document.getElementById('btnGuardarServicio');
+    const tituloFormServicio = document.getElementById('tituloFormServicio');
+    const btnCancelarEdicionServicio = document.getElementById('btnCancelarEdicionServicio');
+
+    function resetearFormularioServicio() {
+        formServicio.reset();
+        document.getElementById('idServicioEdit').value = '';
+        document.getElementById('estadoServicio').value = 'Programado';
+        btnGuardarServicio.textContent = 'Registrar Servicio';
+        tituloFormServicio.textContent = 'Registro de Servicio Programado';
+        btnCancelarEdicionServicio.style.display = 'none';
+    }
+
+    function cargarDatosEnFormularioServicio(servicio) {
+        document.getElementById('idServicioEdit').value = servicio.id_servicio_programado;
+        document.getElementById('proveedorServicio').value = servicio.id_proveedor || '';
+        document.getElementById('fechaProgramada').value = servicio.fecha_programada || '';
+        document.getElementById('horaProgramada').value = servicio.hora_programada || '';
+        document.getElementById('estadoServicio').value = servicio.estado || 'Programado';
+        document.getElementById('descripcionServicio').value = servicio.descripcion_servicio || '';
+        document.getElementById('observacionesServicio').value = servicio.observaciones || '';
+        btnGuardarServicio.textContent = 'Modificar Servicio';
+        tituloFormServicio.textContent = 'Modificar Servicio Programado';
+        btnCancelarEdicionServicio.style.display = 'inline-block';
+    }
+
+    function cargarProveedoresParaServicios() {
+        const selectProveedor = document.getElementById('proveedorServicio');
+        const filtroProveedor = document.getElementById('filtroProveedorServicio');
+        fetch('/obtener-proveedores')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const currentValue = selectProveedor.value;
+                    const currentFiltroValue = filtroProveedor.value;
+                    selectProveedor.innerHTML = '<option value="">-- Seleccione un proveedor --</option>';
+                    filtroProveedor.innerHTML = '<option value="">Todos los proveedores</option>';
+                    data.proveedores.forEach(p => {
+                        const option1 = document.createElement('option');
+                        option1.value = p.id_proveedor;
+                        option1.textContent = p.nombre_proveedor;
+                        selectProveedor.appendChild(option1);
+                        const option2 = document.createElement('option');
+                        option2.value = p.id_proveedor;
+                        option2.textContent = p.nombre_proveedor;
+                        filtroProveedor.appendChild(option2);
+                    });
+                    if (currentValue) selectProveedor.value = currentValue;
+                    if (currentFiltroValue) filtroProveedor.value = currentFiltroValue;
+                }
+            })
+            .catch(err => console.error('Error cargando proveedores:', err));
+    }
+
+    btnCancelarEdicionServicio.addEventListener('click', function() {
+        resetearFormularioServicio();
+    });
+
+    formServicio.addEventListener('submit', function (e) {
+        e.preventDefault();
+        msgServicio.textContent = 'Procesando...';
+        msgServicio.style.color = '';
+
+        const idEdit = document.getElementById('idServicioEdit').value;
+        const datos = {
+            id_proveedor: parseInt(document.getElementById('proveedorServicio').value),
+            descripcion_servicio: document.getElementById('descripcionServicio').value.trim(),
+            fecha_programada: document.getElementById('fechaProgramada').value,
+            hora_programada: document.getElementById('horaProgramada').value,
+            estado: document.getElementById('estadoServicio').value,
+            observaciones: document.getElementById('observacionesServicio').value.trim() || null,
+            idEdit: idEdit || null
+        };
+
+        fetch('/registrar-servicio-programado', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        })
+        .then(res => res.json())
+        .then(respuesta => {
+            if (respuesta.success) {
+                msgServicio.textContent = respuesta.mensaje || 'Operación realizada correctamente.';
+                msgServicio.style.color = '#56b881';
+                // Si se modificó un servicio, actualizar el filtro al estado del servicio modificado
+                if (idEdit) {
+                    const estadoModificado = document.getElementById('estadoServicio').value;
+                    document.getElementById('filtroEstadoServicio').value = estadoModificado;
+                }
+                resetearFormularioServicio();
+                cargarListaServicios();
+                setTimeout(() => {
+                    msgServicio.textContent = '';
+                    msgServicio.style.color = '';
+                }, 3000);
+            } else {
+                msgServicio.textContent = respuesta.mensaje || 'Error en la operación.';
+                msgServicio.style.color = '#e76f51';
+            }
+        })
+        .catch(() => {
+            msgServicio.textContent = 'Error de red o servidor.';
+            msgServicio.style.color = '#e76f51';
+        });
+    });
+
+    function cargarListaServicios() {
+        const listaServicios = document.getElementById('listaServicios');
+        listaServicios.innerHTML = '<div class="loading-vehiculos">Cargando servicios programados...</div>';
+
+        const estado = document.getElementById('filtroEstadoServicio').value;
+        const idProveedor = document.getElementById('filtroProveedorServicio').value;
+        const fechaInicio = document.getElementById('filtroFechaInicio').value;
+        const fechaFin = document.getElementById('filtroFechaFin').value;
+
+        const params = new URLSearchParams();
+        // Si el estado está vacío, no enviar el parámetro (mostrará solo activos por defecto)
+        // Si el estado tiene un valor, enviarlo para filtrar
+        if (estado && estado.trim() !== '') {
+            params.append('estado', estado);
+        }
+        if (idProveedor && idProveedor.trim() !== '') {
+            params.append('idProveedor', idProveedor);
+        }
+        if (fechaInicio && fechaInicio.trim() !== '') {
+            params.append('fechaInicio', fechaInicio);
+        }
+        if (fechaFin && fechaFin.trim() !== '') {
+            params.append('fechaFin', fechaFin);
+        }
+
+        const url = '/obtener-servicios-programados?' + params.toString();
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarListaServicios(data.servicios);
+                } else {
+                    listaServicios.innerHTML = '<div class="no-vehiculos">No se pudieron cargar los servicios programados.</div>';
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando servicios:', err);
+                listaServicios.innerHTML = '<div class="no-vehiculos">Error al cargar los servicios programados.</div>';
+            });
+    }
+
+    function mostrarListaServicios(servicios) {
+        const listaServicios = document.getElementById('listaServicios');
+        
+        if (servicios.length === 0) {
+            listaServicios.innerHTML = '<div class="no-vehiculos">No hay servicios programados.</div>';
+            return;
+        }
+
+        const estadoClass = {
+            'Programado': 'estado-pendiente',
+            'En Proceso': 'estado-activo',
+            'Completado': 'estado-pagado',
+            'Cancelado': 'estado-inactivo'
+        };
+
+        listaServicios.innerHTML = `
+            <table class="tabla-vehiculos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Proveedor</th>
+                        <th>Descripción</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Parqueadero</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${servicios.map(s => {
+                        const fecha = new Date(s.fecha_programada);
+                        const fechaFormateada = fecha.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        const horaFormateada = s.hora_programada ? s.hora_programada.substring(0, 5) : '-';
+                        return `
+                            <tr>
+                                <td><strong>${s.id_servicio_programado}</strong></td>
+                                <td>${s.nombre_proveedor || '-'}</td>
+                                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${s.descripcion_servicio || ''}">${s.descripcion_servicio || '-'}</td>
+                                <td>${fechaFormateada}</td>
+                                <td>${horaFormateada}</td>
+                                <td>${s.nombre_parqueadero || '-'}</td>
+                                <td><span class="${estadoClass[s.estado] || ''}">${s.estado || '-'}</span></td>
+                                <td>
+                                    <button class="btn-accion btn-editar" onclick="editarServicio(${s.id_servicio_programado})">✏️ Editar</button>
+                                    ${s.estado !== 'Completado' && s.estado !== 'Cancelado' ? `
+                                        <button class="btn-accion btn-habilitar" onclick="cambiarEstadoServicio(${s.id_servicio_programado}, 'Completado')">✅ Completar</button>
+                                        <button class="btn-accion btn-inhabilitar" onclick="cambiarEstadoServicio(${s.id_servicio_programado}, 'Cancelado')">❌ Cancelar</button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    window.editarServicio = function(id) {
+        fetch(`/obtener-servicio-programado/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    cargarDatosEnFormularioServicio(data.servicio);
+                    document.getElementById('formServicio').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando servicio:', err);
+                alert('Error al cargar los datos del servicio.');
+            });
+    };
+
+    window.cambiarEstadoServicio = function(id, estado) {
+        fetch('/cambiar-estado-servicio-programado', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_servicio_programado: id, estado: estado })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Establecer el filtro al nuevo estado para que el usuario vea el servicio actualizado
+                document.getElementById('filtroEstadoServicio').value = estado;
+                cargarListaServicios();
+                alert(data.mensaje || 'Estado del servicio actualizado correctamente.');
+            } else {
+                alert(data.mensaje || 'Error al cambiar el estado del servicio.');
+            }
+        })
+        .catch(err => {
+            console.error('Error cambiando estado:', err);
+            alert('Error al cambiar el estado del servicio.');
+        });
+    };
+
+    const btnActualizarServicios = document.getElementById('btnActualizarServicios');
+    const btnFiltrarServicios = document.getElementById('btnFiltrarServicios');
+    if (btnActualizarServicios) {
+        btnActualizarServicios.addEventListener('click', function() {
+            cargarListaServicios();
+        });
+    }
+    if (btnFiltrarServicios) {
+        btnFiltrarServicios.addEventListener('click', function() {
+            cargarListaServicios();
         });
     }
 

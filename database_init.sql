@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS PARQUEADERO (
     direccion VARCHAR(150) NOT NULL,
     horario VARCHAR(50),
     capacidad_total INT,
-    tipo_parqueadero VARCHAR(50)
+    tipo_parqueadero VARCHAR(50),
+    estado VARCHAR(20) DEFAULT 'Activo'
 );
 
 -- Tabla ESPACIO_PARQUEO
@@ -111,6 +112,7 @@ CREATE TABLE IF NOT EXISTS TICKET (
     id_empleado INT,
     id_espacio INT,
     id_tarifa INT,
+    id_parqueadero INT,
     CONSTRAINT FK_TICKET_VEHICULO
         FOREIGN KEY (id_vehiculo) REFERENCES VEHICULO(id_vehiculo)
         ON UPDATE CASCADE
@@ -125,6 +127,10 @@ CREATE TABLE IF NOT EXISTS TICKET (
         ON DELETE SET NULL,
     CONSTRAINT FK_TICKET_TARIFA
         FOREIGN KEY (id_tarifa) REFERENCES TARIFA(id_tarifa)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL,
+    CONSTRAINT FK_TICKET_PARQUEADERO
+        FOREIGN KEY (id_parqueadero) REFERENCES PARQUEADERO(id_parqueadero)
         ON UPDATE CASCADE
         ON DELETE SET NULL
 );
@@ -154,11 +160,28 @@ CREATE TABLE IF NOT EXISTS FACTURA (
         ON DELETE RESTRICT
 );
 
+-- Tabla SERVICIO_PROGRAMADO
+CREATE TABLE IF NOT EXISTS SERVICIO_PROGRAMADO (
+    id_servicio_programado INT PRIMARY KEY AUTO_INCREMENT,
+    id_proveedor INT NOT NULL,
+    descripcion_servicio TEXT NOT NULL,
+    fecha_programada DATE NOT NULL,
+    hora_programada TIME NOT NULL,
+    estado VARCHAR(20) DEFAULT 'Programado',
+    observaciones TEXT,
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT FK_SERVICIO_PROGRAMADO_PROVEEDOR
+        FOREIGN KEY (id_proveedor) REFERENCES PROVEEDOR(id_proveedor)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
 -- Insertar datos iniciales
 
 -- Insertar parqueadero principal
-INSERT INTO PARQUEADERO (nombre, direccion, horario, capacidad_total, tipo_parqueadero) VALUES
-('Parqueadero Central', 'Calle 123 #45-67', '24 horas', 50, 'Mixto');
+INSERT INTO PARQUEADERO (nombre, direccion, horario, capacidad_total, tipo_parqueadero, estado) VALUES
+('Parqueadero Central', 'Calle 123 #45-67', '24 horas', 50, 'Mixto', 'Activo');
 
 -- Insertar espacios de parqueo
 INSERT INTO ESPACIO_PARQUEO (numero_espacio, tipo_espacio, estado, id_parqueadero) VALUES
